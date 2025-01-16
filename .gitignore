@@ -2,3 +2,4 @@ venv
 *.json
 config.yaml
 bot.py
+*.txt

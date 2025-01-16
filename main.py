@@ -1,10 +1,11 @@
 import os
+import sys
 import uuid
 import time
 import yaml
 import random
 import numpy as np
-from typing import Dict, Any, TypedDict
+from typing import List, TypedDict
 from PIL import ImageEnhance, Image
 
 from instagrapi import Client
@@ -20,9 +21,14 @@ class Config(TypedDict):
     check_interval: int
 
 
-def load_config(config_file: str = 'config.yaml') -> Config:
+def load_config(
+    config_file: str = 'config.yaml'
+) -> Config:
     try:
-        with open(config_file, 'r', encoding='utf-8') as file:
+        with open(
+            config_file, 'r',
+            encoding='utf-8'
+        ) as file:
             config: Config = yaml.safe_load(file)
             return config
     except FileNotFoundError:
@@ -31,4 +37,28 @@ def load_config(config_file: str = 'config.yaml') -> Config:
         raise yaml.YAMLError(f"Ошибка при чтении YAML-файла: {e}")
 
 
-print(load_config())
+def load_usernames(
+    usernames_file: str = 'usernames.txt'
+) -> List[str] | None:
+    usernames = []
+    try:
+        with open(
+            usernames_file, 'r',
+            encoding='utf-8'
+        ) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    usernames.append(line)
+        if not len(usernames):
+            print("Ключевые слова не найдены")
+            sys.exit(1)
+        return usernames
+    except FileNotFoundError:
+        print(f"Файл {usernames_file} не найден")
+        sys.exit(1)
+
+
+config = load_config()
+usernames = load_usernames()
+os.makedirs(config["download_folder"], exist_ok=True)
