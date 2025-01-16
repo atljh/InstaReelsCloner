@@ -59,6 +59,25 @@ def load_usernames(
         sys.exit(1)
 
 
+def load_session(
+        client: Client,
+        session_file: str = 'session.json'
+) -> bool:
+    if os.path.exists(session_file):
+        try:
+            client.load_settings(session_file)
+            print("Сессия загружена.")
+            return True
+        except Exception as e:
+            print(f"Ошибка при загрузке сессии: {e}")
+            sys.exit(1)
+            return False
+    else:
+        print("Сессия не найдена. Требуется вход в аккаунт.")
+        sys.exit(1)
+        return False
+
+
 config = load_config()
 usernames = load_usernames()
 os.makedirs(config["download_folder"], exist_ok=True)
