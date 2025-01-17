@@ -4,6 +4,7 @@ import uuid
 import time
 import yaml
 import random
+import asyncio
 import numpy as np
 from typing import List, TypedDict
 from PIL import ImageEnhance, Image
@@ -59,25 +60,41 @@ def load_usernames(
         sys.exit(1)
 
 
-def load_session(
-        client: Client,
+def session_exist(
         session_file: str = 'session.json'
 ) -> bool:
     if os.path.exists(session_file):
-        try:
+        return True
+    return False
+
+
+class ReelsCloner():
+    def __init__(self, client: Client):
+        self.client = client
+        session_file = 'session.json'
+        self.load_session(client, session_file)
+
+    def load_session(
+        self,
+        client: Client,
+        session_file: str = 'session.json'
+    ) -> bool:
+        if session_exist():
             client.load_settings(session_file)
-            print("Сессия загружена.")
+            print("Сессия загружена")
             return True
-        except Exception as e:
-            print(f"Ошибка при загрузке сессии: {e}")
-            sys.exit(1)
-            return False
-    else:
-        print("Сессия не найдена. Требуется вход в аккаунт.")
-        sys.exit(1)
+        print("Файл сесси не найден")
         return False
 
 
-config = load_config()
-usernames = load_usernames()
-os.makedirs(config["download_folder"], exist_ok=True)
+async def main():
+    client = Client()
+    cloner = ReelsCloner(client)
+
+    config = load_config()
+    usernames = load_usernames()
+
+# os.makedirs(config["download_folder"], exist_ok=True)
+
+if __name__ == '__main__':
+    asyncio.run(main())
