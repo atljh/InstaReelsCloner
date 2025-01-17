@@ -11,6 +11,7 @@ from PIL import ImageEnhance, Image
 
 from instagrapi import Client
 from instagrapi.types import Usertag, UserShort
+from instagrapi.exceptions import LoginRequired
 from moviepy.editor import VideoFileClip
 
 
@@ -76,6 +77,7 @@ class ReelsCloner():
         self.client = Client()
         self.config = config
         self.session_file = 'session.json'
+        self.client.delay_range = [1, 3]
 
     def load_session(
         self,
@@ -91,24 +93,52 @@ class ReelsCloner():
 
     def login(
         self,
-        client: Client,
+        cl: Client,
         config: Config,
         session_path: str = 'session.json'
     ) -> bool:
-        if not client.user_id:
-            try:
-                client.login(config["username"], config["password"])
-                print("Успешный вход в аккаунт!")
-                client.dump_settings(session_path)
-                return True
-            except Exception as e:
-                print(f"Ошибка при входе: {e}")
-                return False
+        session = cl.load_settings(session_path)
+        login_via_session = False
+        login_via_pw = False
 
+        if session:
+            try:
+                cl.set_settings(session)
+                cl.login(config['username'], config['password'])
+                print("Авторизация успешна")
+                try:
+                    cl.get_timeline_feed()
+                except LoginRequired:
+                    print("Сессия не валидная")
+                    old_session = cl.get_settings()
+
+                    cl.set_settings({})
+                    cl.set_uuids(old_session["uuids"])
+
+                    cl.login(config['username'], config['password'])
+                login_via_session = True
+            except Exception as e:
+                print(f"Ошибка при авторизации: {e}")
+
+        if not login_via_session:
+            try:
+                print("Пробуем зайти через логин/пароль")
+                if cl.login(config['username'], config['password']):
+                    login_via_pw = True
+            except Exception as e:
+                print(f"Ошибка при входе через логин и пароль {e}")
+
+        if not login_via_pw and not login_via_session:
+            raise Exception("Couldn't login user with either password or session")
+
+    def start(self):
+        self.login(self.client, self.config, self.session_file)
+        print(self.client.account_info().dict())
 
 async def main():
     config = load_config()
     cloner = ReelsCloner(config)
+    cloner.start()
     usernames = load_usernames()
 
 # os.makedirs(config["download_folder"], exist_ok=True)
