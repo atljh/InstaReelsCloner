@@ -201,7 +201,7 @@ class ReelsCloner:
         except Exception as e:
             print(f"Ошибка при загрузке видео: {e}")
 
-    async def post_video(self, video_path: str, original_description: str):
+    async def post_video(self, video_path: str, original_description: str, target_username: str, latest_media: str):
         print(f"Reels скачан: {video_path}")
 
         unique_video_path = self.unique_video(video_path)
