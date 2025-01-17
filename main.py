@@ -69,10 +69,13 @@ def session_exist(
 
 
 class ReelsCloner():
-    def __init__(self, client: Client):
-        self.client = client
-        session_file = 'session.json'
-        self.load_session(client, session_file)
+    def __init__(
+        self,
+        config: Config
+    ):
+        self.client = Client()
+        self.config = config
+        self.session_file = 'session.json'
 
     def load_session(
         self,
@@ -86,12 +89,26 @@ class ReelsCloner():
         print("Файл сесси не найден")
         return False
 
+    def login(
+        self,
+        client: Client,
+        config: Config,
+        session_path: str = 'session.json'
+    ) -> bool:
+        if not client.user_id:
+            try:
+                client.login(config["username"], config["password"])
+                print("Успешный вход в аккаунт!")
+                client.dump_settings(session_path)
+                return True
+            except Exception as e:
+                print(f"Ошибка при входе: {e}")
+                return False
+
 
 async def main():
-    client = Client()
-    cloner = ReelsCloner(client)
-
     config = load_config()
+    cloner = ReelsCloner(config)
     usernames = load_usernames()
 
 # os.makedirs(config["download_folder"], exist_ok=True)
