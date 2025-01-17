@@ -141,7 +141,7 @@ class ReelsCloner:
         if not os.path.exists(video_path):
             raise FileNotFoundError(f"Файл {video_path} не найден!")
 
-        unique_filename = str(uuid.uuid4()) + '.mp4'
+        unique_filename = str(uuid.uuid4())
         output_path = os.path.join(self.config['download_folder'], unique_filename)
 
         clip = VideoFileClip(video_path)
@@ -172,16 +172,15 @@ class ReelsCloner:
         media_info = self.client.media_info(media_pk)
         if media_info.media_type == 2:
             video_url = media_info.video_url
-
-            video_name = f"{media_pk}.mp4"
+            video_name = f"{media_pk}"
             video_path = os.path.join(folder, video_name)
-
+            print(video_path)
             self.client.video_download_by_url(video_url, video_path)
-
-            if os.path.exists(video_path + ".mp4"):
-                if os.path.exists(video_path):
-                    os.remove(video_path)
-                os.rename(video_path + ".mp4", video_path)
+            video_path = video_path + ".mp4"
+            if os.path.exists(video_path):
+                # if os.path.exists(video_path):
+                    # os.remove(video_path)
+                # os.rename(video_path, video_path)
                 return video_path, media_info.caption_text
             else:
                 print(f"Ошибка: файл {video_path} не был создан!")
@@ -202,6 +201,26 @@ class ReelsCloner:
         except Exception as e:
             print(f"Ошибка при загрузке видео: {e}")
 
+    async def post_video(self, video_path: str, original_description: str):
+        print(f"Reels скачан: {video_path}")
+
+        unique_video_path = self.unique_video(video_path)
+        print(f"Reels уникализирован: {unique_video_path}")
+
+        unique_desc = self.unique_description(original_description)
+        print(f"Уникализированное описание: {unique_desc}")
+
+        user_info = self.client.user_info_by_username(self.config['username'])
+        user_short = UserShort(
+            pk=user_info.pk,
+            username=user_info.username,
+            full_name=user_info.full_name,
+            profile_pic_url=user_info.profile_pic_url
+        )
+
+        self.upload_to_reels(unique_video_path, unique_desc, user_short)
+        self.save_last_processed_video(target_username, latest_media.pk)
+
     async def monitor_account(self, target_username: str, interval: int = 300):
         print(f"Начинаем следить за аккаунтом {target_username}...")
         last_processed_videos = self.load_last_processed_videos()
@@ -209,8 +228,8 @@ class ReelsCloner:
 
         while True:
             try:
-                user_id = self.client.user_id_from_username(target_username)
-                medias = self.client.user_medias(user_id, amount=1)
+                user_info_dict = self.client.user_info_by_username_v1(target_username).dict()
+                medias = self.client.user_medias(user_info_dict.get("pk"), amount=1)
 
                 if medias:
                     latest_media = medias[0]
@@ -222,27 +241,9 @@ class ReelsCloner:
                             latest_media.pk, self.config['download_folder']
                         )
                         if video_path:
-                            print(f"Reels скачан: {video_path}")
+                            self.post_video(video_path, original_description)
 
-                            if os.path.exists(video_path):
-                                unique_video_path = self.unique_video(video_path)
-                                print(f"Reels уникализирован: {unique_video_path}")
 
-                                unique_desc = self.unique_description(original_description)
-                                print(f"Уникализированное описание: {unique_desc}")
-
-                                user_info = self.client.user_info_by_username(self.config['username'])
-                                user_short = UserShort(
-                                    pk=user_info.pk,
-                                    username=user_info.username,
-                                    full_name=user_info.full_name,
-                                    profile_pic_url=user_info.profile_pic_url
-                                )
-
-                                self.upload_to_reels(unique_video_path, unique_desc, user_short)
-                                self.save_last_processed_video(target_username, latest_media.pk)
-                            else:
-                                print(f"Ошибка: файл {video_path} не найден!")
             except Exception as e:
                 print(f"Ошибка при мониторинге {target_username}: {e}")
                 retry_delay = random.randint(300, 600)
@@ -255,7 +256,6 @@ class ReelsCloner:
     def start(self):
         self.load_session(self.client, self.session_file)
         self.login(self.client, self.config, self.session_file)
-        print(self.client.account_info().dict())
 
 
 async def main():
