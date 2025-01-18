@@ -140,11 +140,11 @@ class ReelsCloner:
         with open(self.last_processed_videos_file, 'w') as f:
             json.dump(last_processed_videos, f, indent=4)
 
-    def unique_video(self, video_path: str) -> str:
+    def unique_video(self, video_path):
         if not os.path.exists(video_path):
             raise FileNotFoundError(f"Файл {video_path} не найден!")
 
-        unique_filename = str(uuid.uuid4())
+        unique_filename = str(uuid.uuid4()) + '.mp4'
         output_path = os.path.join(self.config['download_folder'], unique_filename)
 
         clip = VideoFileClip(video_path)
@@ -241,7 +241,7 @@ class ReelsCloner:
 
         while True:
             try:
-                user_info_dict = self.client.user_info_by_username_v1(target_username).dict()
+                user_info_dict = self.client.user_info_by_username_v1(target_username).model_dump()
                 medias = self.client.user_medias(user_info_dict.get("pk"), amount=1)
 
                 if medias:
@@ -255,7 +255,6 @@ class ReelsCloner:
                         )
                         if not video_path:
                             return
-                        print('post')
                         await self.post_video(
                             video_path, original_description,
                             target_username, latest_media
