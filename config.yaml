@@ -1,0 +1,7 @@
+username: "sxemshiki" # Имя пользователя Instagram, от имени которого будет выполняться вход
+password: "1998artemQ" # Пароль от аккаунта Instagram
+
+download_folder: "downloads" # Путь к папке для сохранения скачанных видео
+session_name: "session.json" # Название файла сессии
+
+check_interval: 60 # Интервал проверки новых видео (в секундах)
