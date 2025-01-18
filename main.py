@@ -1,7 +1,6 @@
 import os
 import sys
 import uuid
-import time
 import yaml
 import random
 import asyncio
@@ -14,10 +13,6 @@ from instagrapi import Client
 from instagrapi.types import Usertag, UserShort
 from instagrapi.exceptions import LoginRequired
 from moviepy.editor import VideoFileClip
-from moviepy.config import change_settings
-
-
-change_settings({"IMAGEMAGICK_BINARY": None, "FFMPEG_BINARY": None})
 
 
 class Config(TypedDict):
@@ -149,7 +144,6 @@ class ReelsCloner:
 
         unique_filename = str(uuid.uuid4()) + '.mp4'
         output_path = os.path.join(self.config['download_folder'], unique_filename)
-
         clip = VideoFileClip(video_path)
 
         def adjust_contrast_exposure(frame):
@@ -185,13 +179,10 @@ class ReelsCloner:
             folder = f"{folder}/{username}"
             os.makedirs(folder, exist_ok=True)
             video_url = media_info.video_url
-            video_path = os.path.join(folder, media_pk)
+            video_path = os.path.join(folder, str(media_pk))
             self.client.video_download_by_url(video_url, video_path)
             video_path = video_path + ".mp4"
             if os.path.exists(video_path):
-                # if os.path.exists(video_path):
-                    # os.remove(video_path)
-                # os.rename(video_path, video_path)
                 print(f"Reels скачан: {video_path}")
                 return video_path, media_info.caption_text
             else:
@@ -269,9 +260,6 @@ class ReelsCloner:
 
             except Exception as e:
                 print(f"Ошибка при мониторинге {target_username}: {e}")
-                retry_delay = random.randint(300, 600)
-                print(f"Повторная попытка через {retry_delay // 60} минут...")
-                await asyncio.sleep(retry_delay)
                 continue
 
             await asyncio.sleep(interval)
