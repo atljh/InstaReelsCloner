@@ -1,5 +1,4 @@
 venv
-*.json
 bot.py
 downloads
 *.mp3
