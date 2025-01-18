@@ -126,10 +126,13 @@ class ReelsCloner:
             raise Exception("Couldn't login user with either password or session")
 
     def load_last_processed_videos(self) -> Dict[str, str]:
-        if os.path.exists(self.last_processed_videos_file):
-            with open(self.last_processed_videos_file, 'r') as f:
-                return json.load(f)
-        return {}
+        if not os.path.exists(self.last_processed_videos_file):
+            with open(self.last_processed_videos_file, 'w') as f:
+                json.dump({}, f)
+            return {}
+
+        with open(self.last_processed_videos_file, 'r') as f:
+            return json.load(f)
 
     def save_last_processed_video(self, username: str, media_pk: str):
         last_processed_videos = self.load_last_processed_videos()
@@ -168,19 +171,25 @@ class ReelsCloner:
 
         return description
 
-    def download_video(self, media_pk: str, folder: str) -> tuple[str | None, str | None]:
+    def download_video(
+        self,
+        media_pk: str,
+        folder: str,
+        username: str
+    ) -> tuple[str | None, str | None]:
         media_info = self.client.media_info(media_pk)
         if media_info.media_type == 2:
+            folder = f"{folder}/{username}"
+            os.makedirs(folder, exist_ok=True)
             video_url = media_info.video_url
-            video_name = f"{media_pk}"
-            video_path = os.path.join(folder, video_name)
-            print(video_path)
+            video_path = os.path.join(folder, media_pk)
             self.client.video_download_by_url(video_url, video_path)
             video_path = video_path + ".mp4"
             if os.path.exists(video_path):
                 # if os.path.exists(video_path):
                     # os.remove(video_path)
                 # os.rename(video_path, video_path)
+                print(f"Reels скачан: {video_path}")
                 return video_path, media_info.caption_text
             else:
                 print(f"Ошибка: файл {video_path} не был создан!")
@@ -201,9 +210,13 @@ class ReelsCloner:
         except Exception as e:
             print(f"Ошибка при загрузке видео: {e}")
 
-    async def post_video(self, video_path: str, original_description: str, target_username: str, latest_media: str):
-        print(f"Reels скачан: {video_path}")
-
+    async def post_video(
+        self,
+        video_path: str,
+        original_description: str,
+        target_username: str,
+        latest_media: str
+    ):
         unique_video_path = self.unique_video(video_path)
         print(f"Reels уникализирован: {unique_video_path}")
 
@@ -238,12 +251,15 @@ class ReelsCloner:
                         last_processed_video = latest_media.pk
 
                         video_path, original_description = self.download_video(
-                            latest_media.pk, self.config['download_folder']
+                            latest_media.pk, self.config['download_folder'], target_username
                         )
-                        if video_path:
-                            self.post_video(video_path, original_description)
-
-
+                        if not video_path:
+                            return
+                        print('post')
+                        await self.post_video(
+                            video_path, original_description,
+                            target_username, latest_media
+                        )
             except Exception as e:
                 print(f"Ошибка при мониторинге {target_username}: {e}")
                 retry_delay = random.randint(300, 600)
@@ -262,11 +278,11 @@ async def main():
     config = load_config()
     cloner = ReelsCloner(config)
     cloner.start()
-
+    await cloner.monitor_account("temschiki1")
     usernames = load_usernames()
 
-    tasks = [cloner.monitor_account(username, config['check_interval']) for username in usernames]
-    await asyncio.gather(*tasks)
+    # tasks = [cloner.monitor_account(username, config['check_interval']) for username in usernames]
+    # await asyncio.gather(*tasks)
 
 
 if __name__ == '__main__':

@@ -3,3 +3,5 @@ venv
 config.yaml
 bot.py
 *.txt
+downloads
+*.mp3
