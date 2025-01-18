@@ -103,7 +103,6 @@ class ReelsCloner:
                 try:
                     cl.get_timeline_feed()
                 except LoginRequired:
-                    print("Сессия не валидная")
                     old_session = cl.get_settings()
 
                     cl.set_settings({})
@@ -223,7 +222,8 @@ class ReelsCloner:
         unique_desc = self.unique_description(original_description)
         print(f"Уникализированное описание: {unique_desc}")
 
-        user_info = self.client.user_info_by_username(self.config['username'])
+        user_info = self.client.user_info_by_username_v1(target_username).model_dump()
+
         user_short = UserShort(
             pk=user_info.pk,
             username=user_info.username,
@@ -259,6 +259,10 @@ class ReelsCloner:
                             video_path, original_description,
                             target_username, latest_media
                         )
+            except LoginRequired:
+                print("Сессия устарела. Требуется повторный вход.")
+                self.login(self.client, self.config, self.session_file)
+
             except Exception as e:
                 print(f"Ошибка при мониторинге {target_username}: {e}")
                 retry_delay = random.randint(300, 600)
@@ -277,11 +281,11 @@ async def main():
     config = load_config()
     cloner = ReelsCloner(config)
     cloner.start()
-    await cloner.monitor_account("temschiki1")
+
     usernames = load_usernames()
 
-    # tasks = [cloner.monitor_account(username, config['check_interval']) for username in usernames]
-    # await asyncio.gather(*tasks)
+    tasks = [cloner.monitor_account(username, config['check_interval']) for username in usernames]
+    await asyncio.gather(*tasks)
 
 
 if __name__ == '__main__':
