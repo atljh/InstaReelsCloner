@@ -14,6 +14,10 @@ from instagrapi import Client
 from instagrapi.types import Usertag, UserShort
 from instagrapi.exceptions import LoginRequired
 from moviepy.editor import VideoFileClip
+from moviepy.config import change_settings
+
+
+change_settings({"IMAGEMAGICK_BINARY": None, "FFMPEG_BINARY": None})
 
 
 class Config(TypedDict):
@@ -155,7 +159,7 @@ class ReelsCloner:
             return np.array(img)
 
         clip = clip.fl_image(adjust_contrast_exposure)
-        clip.write_videofile(output_path, codec='libx264')
+        clip.write_videofile(output_path, codec='libx264', logger=None)
 
         return output_path
 
@@ -222,7 +226,7 @@ class ReelsCloner:
         unique_desc = self.unique_description(original_description)
         print(f"Уникализированное описание: {unique_desc}")
 
-        user_info = self.client.user_info_by_username_v1(target_username).model_dump()
+        user_info = self.client.user_info_by_username_v1(target_username)
 
         user_short = UserShort(
             pk=user_info.pk,
