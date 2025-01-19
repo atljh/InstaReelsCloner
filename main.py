@@ -6,7 +6,7 @@ import random
 import asyncio
 import numpy as np
 import json
-from typing import List, TypedDict, Dict
+from typing import List, TypedDict, Dict, Optional
 from PIL import ImageEnhance, Image
 
 from instagrapi import Client
@@ -21,6 +21,7 @@ class Config(TypedDict):
     target_usernames: List[str]
     download_folder: str
     check_interval: int
+    proxy: Optional[Dict[str, str]]  # Прокси (опционально)
 
 
 def load_config(
@@ -72,6 +73,11 @@ class ReelsCloner:
         self.client.delay_range = [1, 3]
         self.last_processed_videos_file = 'last_processed_videos.json'
 
+        if self.config.get('proxy'):
+            proxy_url = self.config['proxy']
+            self.client.set_proxy(proxy_url)
+            print("Прокси настроены:", proxy_url)
+
     def load_session(
         self,
         client: Client,
@@ -110,6 +116,10 @@ class ReelsCloner:
                     cl.login(config['username'], config['password'])
                 login_via_session = True
             except Exception as e:
+                if "Failed to parse" in str(e):
+                    print("Прокси не валидные")
+                    sys.exit(1)
+
                 print(f"Ошибка при авторизации: {e}")
 
         if not login_via_session:
