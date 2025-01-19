@@ -200,13 +200,12 @@ class ReelsCloner:
                 return None, None
         return None, None
 
-    def upload_to_reels(self, video_path: str, caption: str, user_short: UserShort):
+    def upload_to_reels(self, video_path: str, caption: str):
         try:
             self.client.clip_upload(
                 video_path,
                 caption=caption,
                 thumbnail=None,
-                usertags=[Usertag(user=user_short, x=0.5, y=0.5)],
                 location=None,
                 extra_data={}
             )
@@ -227,16 +226,7 @@ class ReelsCloner:
         unique_desc = self.unique_description(original_description)
         print(f"Уникализированное описание: {unique_desc}")
 
-        user_info = self.client.user_info_by_username_v1(target_username)
-
-        user_short = UserShort(
-            pk=user_info.pk,
-            username=user_info.username,
-            full_name=user_info.full_name,
-            profile_pic_url=user_info.profile_pic_url
-        )
-
-        self.upload_to_reels(unique_video_path, unique_desc, user_short)
+        self.upload_to_reels(unique_video_path, unique_desc)
         self.save_last_processed_video(target_username, latest_media.pk)
 
     async def monitor_account(self, target_username: str, interval: int = 300):
