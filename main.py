@@ -123,7 +123,9 @@ class ReelsCloner:
                 if "Failed to parse" in str(e):
                     print("Прокси не валидные")
                     sys.exit(1)
-
+                elif "waif" in str(e):
+                    print("Подождите несколько минут и попробуйте еще раз")
+                    sys.exit(1)
                 print(f"Ошибка при авторизации: {e}")
 
         if not login_via_session:
