@@ -83,12 +83,16 @@ class ReelsCloner:
         client: Client,
         session_file: str = 'session.json'
     ) -> bool:
-        if os.path.exists(session_file):
-            client.load_settings(session_file)
-            print("Сессия загружена")
-            return True
-        print("Файл сессии не найден")
-        return False
+        try:
+            if os.path.exists(session_file):
+                session = client.load_settings(session_file)
+                print("Сессия загружена")
+                return session
+            print("Файл сессии не найден")
+            return False
+        except FileNotFoundError:
+            print("Not found")
+            return False
 
     def login(
         self,
@@ -96,7 +100,7 @@ class ReelsCloner:
         config: Config,
         session_path: str = 'session.json'
     ) -> bool:
-        session = cl.load_settings(session_path)
+        session = self.load_session(cl, session_path)
         login_via_session = False
         login_via_pw = False
 
@@ -233,7 +237,6 @@ class ReelsCloner:
         print(f"Начинаем следить за аккаунтом {target_username}...")
         last_processed_videos = self.load_last_processed_videos()
         last_processed_video = last_processed_videos.get(target_username)
-
         while True:
             try:
                 user_info_dict = self.client.user_info_by_username_v1(target_username).model_dump()
@@ -265,7 +268,6 @@ class ReelsCloner:
             await asyncio.sleep(interval)
 
     def start(self):
-        self.load_session(self.client, self.session_file)
         self.login(self.client, self.config, self.session_file)
 
 
