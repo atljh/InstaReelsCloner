@@ -133,6 +133,8 @@ class ReelsCloner:
                 print("Пробуем зайти через логин/пароль")
                 if cl.login(config['username'], config['password']):
                     login_via_pw = True
+                    cl.dump_settings(session_path)
+
             except Exception as e:
                 print(f"Ошибка при входе через логин и пароль {e}")
 
