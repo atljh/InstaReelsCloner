@@ -10,7 +10,6 @@ from typing import List, TypedDict, Dict, Optional
 from PIL import ImageEnhance, Image
 
 from instagrapi import Client
-from instagrapi.types import Usertag, UserShort
 from instagrapi.exceptions import LoginRequired
 from moviepy.editor import VideoFileClip
 
@@ -21,7 +20,7 @@ class Config(TypedDict):
     target_usernames: List[str]
     download_folder: str
     check_interval: int
-    proxy: Optional[Dict[str, str]]  # Прокси (опционально)
+    proxy: Optional[Dict[str, str]]
 
 
 def load_config(
@@ -235,7 +234,6 @@ class ReelsCloner:
         print(f"Уникализированное описание: {unique_desc}")
 
         self.upload_to_reels(unique_video_path, unique_desc)
-        self.save_last_processed_video(target_username, latest_media.pk)
 
     async def monitor_account(self, target_username: str, interval: int = 300):
         print(f"Начинаем следить за аккаунтом {target_username}...")
@@ -250,6 +248,7 @@ class ReelsCloner:
                     latest_media = medias[0]
                     if latest_media.media_type == 2 and latest_media.pk != last_processed_video:
                         print(f"Обнаружен новый Reels от {target_username}: {latest_media.pk}")
+                        self.save_last_processed_video(target_username, latest_media.pk)
                         last_processed_video = latest_media.pk
 
                         video_path, original_description = self.download_video(
@@ -266,8 +265,11 @@ class ReelsCloner:
                 self.login(self.client, self.config, self.session_file)
 
             except Exception as e:
-                print(f"Ошибка при мониторинге {target_username}: {e}")
-                continue
+                if "429" in str(e):
+                    print("Превышен лимит запросов. Увеличиваю задержку...")
+                    await asyncio.sleep(60)
+                else:
+                    print(f"Ошибка при мониторинге {target_username}: {e}")
 
             await asyncio.sleep(interval)
 
