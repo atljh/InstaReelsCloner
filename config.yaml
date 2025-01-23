@@ -6,4 +6,4 @@ session_name: "session.json" # Название файла сессии
 
 check_interval: 60 # Интервал проверки новых видео (в секундах)
 
-proxy: socks5://B8SHnMHa:N1TAkpN2@109.205.184.61:64491
+# proxy: socks5://B8SHnMHa:N1TAkpN2@109.205.184.61:64491

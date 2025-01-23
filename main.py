@@ -61,7 +61,6 @@ def load_config(config_file: str = 'config.yaml') -> Config:
     try:
         with open(config_file, 'r', encoding='utf-8') as file:
             config: Config = yaml.safe_load(file)
-            logger.success(f"Конфигурация загружена из {config_file}")
             return config
     except FileNotFoundError:
         logger.error(f"Конфигурационный файл '{config_file}' не найден.")
@@ -103,7 +102,7 @@ class ReelsCloner:
             logger.info(f"Прокси настроены: {proxy_url}")
 
         logger.success(
-            f"Инициализация ReelsCloner завершена | Прокси: {'активен' if config.get('proxy') else 'отсутствует'}"
+            f"Прокси: {'активен' if config.get('proxy') else 'отсутствует'}"
         )
 
     def load_session(self, client: Client, session_file: str = 'session.json') -> bool:
@@ -145,6 +144,9 @@ class ReelsCloner:
                     sys.exit(1)
                 elif "waif" in str(e):
                     logger.warning("Подождите несколько минут и попробуйте еще раз")
+                    sys.exit(1)
+                elif "submit_phone" in str(e):
+                    logger.error("Нужно подтверждение аккаунта по смс")
                     sys.exit(1)
                 logger.error(f"Ошибка при авторизации: {e}")
 
@@ -279,6 +281,9 @@ class ReelsCloner:
                 if "429" in str(e):
                     logger.warning("Превышен лимит запросов. Увеличиваю задержку...")
                     await asyncio.sleep(60)
+                if "submit_phone" in str(e):
+                    logger.error("Нужно подтверждение аккаунта по смс")
+                    sys.exit(1)
                 else:
                     logger.error(f"Ошибка при мониторинге {target_username}: {e}")
 
