@@ -70,8 +70,6 @@ async def main():
 
     usernames = load_usernames()
 
-    tasks = [cloner.monitor_account(username, config['check_interval']) for username in usernames]
-    await asyncio.gather(*tasks)
 
 
 if __name__ == '__main__':
