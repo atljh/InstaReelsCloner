@@ -59,33 +59,6 @@ class ReelsCloner:
         )
         logger.success(f"Видео загружено | Путь: {unique_video_path}")
 
-    async def monitor_account(self, target_username: str, interval: int = 300):
-        logger.info(f"Запуск мониторинга аккаунта: @{target_username}")
-        last_processed_videos = self.download_manager.load_last_processed_videos()
-        last_processed_video = last_processed_videos.get(target_username)
-        while True:
-            try:
-                user_info_dict = self.auth_manager.client.user_info_by_username_v1(target_username).model_dump()
-                medias = self.auth_manager.client.user_medias(user_info_dict.get("pk"), amount=1)
-
-                if medias and len(medias) > 0:
-                    latest_media = medias[0]
-                    if latest_media.media_type == 2 and latest_media.pk != last_processed_video:
-                        logger.success(f"Обнаружен новый Reels: @{target_username} | ID: {latest_media.pk}")
-                        self.download_manager.save_last_processed_video(target_username, latest_media.pk)
-                        last_processed_video = latest_media.pk
-
-                        video_path, original_description = self.download_manager.download_video(
-                            latest_media.pk, self.config['download_folder'], target_username
-                        )
-                        if not video_path:
-                            return
-                        await self.post_video(video_path, original_description, target_username)
-            except Exception as e:
-                logger.error(f"Ошибка при мониторинге {target_username}: {e}")
-
-            await asyncio.sleep(interval)
-
     def start(self):
         self.auth_manager.login()
 
