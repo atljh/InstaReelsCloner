@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from typing import Dict
 from src.auth import AuthManager
 from src.download import DownloadManager
 from src.uniqueize import UniqueManager

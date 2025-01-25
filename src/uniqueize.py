@@ -3,6 +3,7 @@ import uuid
 import random
 import logging
 import numpy as np
+from typing import Dict
 from PIL import ImageEnhance, Image
 from moviepy.editor import VideoFileClip
 
