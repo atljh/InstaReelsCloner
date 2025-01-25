@@ -4,6 +4,7 @@ from typing import Dict
 from src.auth import AuthManager
 from src.download import DownloadManager
 from src.uniqueize import UniqueManager
+from src.post import PostManager
 from config import load_config, load_usernames
 
 logging.SUCCESS = 25
@@ -42,22 +43,15 @@ logger.addHandler(handler)
 
 class ReelsCloner:
     def __init__(self, config: Dict):
+        self.config = config
         self.auth_manager = AuthManager(config)
         self.download_manager = DownloadManager(self.auth_manager.client, config)
         self.unique_manager = UniqueManager(config)
-        self.config = config
+        self.post_manager = PostManager(self.auth_manager.client)
 
-    async def post_video(self, video_path: str, original_description: str, target_username: str):
-        unique_video_path = self.unique_manager.unique_video(video_path)
+    async def post_video(self, video_path: str, original_description: str):
         unique_desc = self.unique_manager.unique_description(original_description)
-        self.auth_manager.client.clip_upload(
-            unique_video_path,
-            caption=unique_desc,
-            thumbnail=None,
-            location=None,
-            extra_data={}
-        )
-        logger.success(f"Видео загружено | Путь: {unique_video_path}")
+        await self.post_manager.post_video(video_path, unique_desc)
 
     def start(self):
         self.auth_manager.login()
