@@ -1,44 +1,13 @@
 import asyncio
-import logging
 from typing import Dict
 from src.auth import AuthManager
 from src.download import DownloadManager
 from src.uniqueize import UniqueManager
 from src.post import PostManager
 from config import load_config, load_usernames
+from logger import setup_logger
 
-logging.SUCCESS = 25
-logging.addLevelName(logging.SUCCESS, 'SUCCESS')
-
-
-def success(self, message, *args, **kwargs):
-    if self.isEnabledFor(logging.SUCCESS):
-        self._log(logging.SUCCESS, message, args, **kwargs)
-
-
-logging.Logger.success = success
-
-logger = logging.getLogger("ReelsCloner")
-logger.setLevel(logging.INFO)
-
-
-class CustomFormatter(logging.Formatter):
-    FORMATS = {
-        logging.INFO: "[%(asctime)s] %(message)s",
-        logging.WARNING: "[%(asctime)s] ⚠️ %(message)s",
-        logging.ERROR: "[%(asctime)s] ❌ ОШИБКА: %(message)s",
-        logging.SUCCESS: "[%(asctime)s] ✅ %(message)s",
-    }
-
-    def format(self, record):
-        log_fmt = self.FORMATS.get(record.levelno)
-        formatter = logging.Formatter(log_fmt, datefmt="%Y-%m-%d %H:%M:%S")
-        return formatter.format(record)
-
-
-handler = logging.StreamHandler()
-handler.setFormatter(CustomFormatter())
-logger.addHandler(handler)
+logger = setup_logger()
 
 
 class ReelsCloner:
@@ -63,7 +32,6 @@ async def main():
     cloner.start()
 
     usernames = load_usernames()
-
 
 
 if __name__ == '__main__':
