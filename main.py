@@ -1,9 +1,9 @@
 import asyncio
 from typing import Dict
 from src.auth import AuthManager
+from src.post import PostManager
 from src.download import DownloadManager
 from src.uniqueize import UniqueManager
-from src.post import PostManager
 from config import load_config, load_usernames
 from logger import setup_logger
 
@@ -16,7 +16,6 @@ class ReelsCloner:
         self.auth_manager = AuthManager(config)
         self.download_manager = DownloadManager(self.auth_manager.client, config)
         self.unique_manager = UniqueManager(config)
-        self.post_manager = PostManager(self.auth_manager.client)
 
     async def post_video(self, video_path: str, original_description: str):
         unique_desc = self.unique_manager.unique_description(original_description)
@@ -24,6 +23,13 @@ class ReelsCloner:
 
     def start(self):
         self.auth_manager.login()
+
+
+class ReelsPoster:
+    def __init__(self, config: Dict):
+        self.config = config
+        self.auth_manager = AuthManager(config)
+        self.post_manager = PostManager(self.auth_manager.client)
 
 
 async def main():

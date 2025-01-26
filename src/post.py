@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 from instagrapi import Client
 from instagrapi.exceptions import LoginRequired, ChallengeRequired
 
@@ -28,7 +27,6 @@ class PostManager:
             bool: True, если публикация прошла успешно, иначе False.
         """
         try:
-            # Публикация видео
             self.client.clip_upload(
                 video_path,
                 caption=unique_description,
