@@ -14,7 +14,7 @@ class DownloadManager:
         self.videos_to_download = self.config.videos_to_download
         self.last_processed_videos_file = 'last_processed_videos.json'
 
-    def get_last_videos(self, username: str) -> List:
+    async def get_last_videos(self, username: str) -> List:
         user_info_dict = self.client.user_info_by_username_v1(username).model_dump()
         medias = self.client.user_medias(user_info_dict.get("pk"), amount=self.videos_to_download)
         return medias

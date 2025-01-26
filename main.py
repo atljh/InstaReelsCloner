@@ -25,9 +25,12 @@ class ReelsCloner:
     def _auth(self) -> None:
         self.auth_manager.login()
 
-    def _get_last_videos(self, usernames: List[str]) -> None:
+    async def _get_last_videos(self, usernames: List[str]) -> None:
+        videos = []
         for username in usernames:
-            self.download_manager.get_last_videos(username)
+            video = await self.download_manager.get_last_videos(username)
+            videos.append(video)
+        return videos
 
     def start(self) -> None:
         self._auth()
