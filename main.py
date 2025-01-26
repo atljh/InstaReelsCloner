@@ -1,5 +1,5 @@
 import asyncio
-from typing import Dict
+from typing import Dict, List
 from rich.console import Console
 from rich.prompt import Prompt
 from rich.panel import Panel
@@ -21,14 +21,16 @@ class ReelsCloner:
         self.auth_manager = AuthManager(config)
         self.download_manager = DownloadManager(self.auth_manager.client, config)
         self.unique_manager = UniqueManager(config)
-        self.post_manager = PostManager(self.auth_manager.client)
 
-    async def post_video(self, video_path: str, original_description: str) -> None:
-        unique_desc = self.unique_manager.unique_description(original_description)
-        await self.post_manager.post_video(video_path, unique_desc)
+    def _auth(self) -> None:
+        self.auth_manager.login()
+
+    def _get_last_videos(self, usernames: List[str]) -> None:
+        for username in usernames:
+            self.download_manager.get_last_videos(username)
 
     def start(self) -> None:
-        self.auth_manager.login()
+        self._auth()
 
 
 class ReelsPoster:
@@ -36,6 +38,10 @@ class ReelsPoster:
         self.config = config
         self.auth_manager = AuthManager(config)
         self.post_manager = PostManager(self.auth_manager.client)
+
+    async def post_video(self, video_path: str, original_description: str) -> None:
+        unique_desc = self.unique_manager.unique_description(original_description)
+        await self.post_manager.post_video(video_path, unique_desc)
 
 
 def display_welcome_message() -> None:
@@ -68,7 +74,6 @@ async def main() -> None:
             cloner.start()
 
             usernames = load_usernames()
-            console.print(f"Загружены имена пользователей: {usernames}", style="bold cyan")
 
             # await cloner.download_manager.download_reels(usernames)
 

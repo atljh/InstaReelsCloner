@@ -1,7 +1,7 @@
 import os
 import json
 import logging
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 from instagrapi import Client
 
 logger = logging.getLogger("ReelsCloner")
@@ -11,7 +11,13 @@ class DownloadManager:
     def __init__(self, client: Client, config: Dict):
         self.client = client
         self.config = config
+        self.videos_to_download = self.config.videos_to_download
         self.last_processed_videos_file = 'last_processed_videos.json'
+
+    def get_last_videos(self, username: str) -> List:
+        user_info_dict = self.client.user_info_by_username_v1(username).model_dump()
+        medias = self.client.user_medias(user_info_dict.get("pk"), amount=self.videos_to_download)
+        return medias
 
     def load_last_processed_videos(self) -> Dict[str, str]:
         if not os.path.exists(self.last_processed_videos_file):
