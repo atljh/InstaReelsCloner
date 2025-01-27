@@ -1,18 +1,13 @@
 import asyncio
 from typing import Dict
-from rich.console import Console
 from rich.prompt import Prompt
 from rich.panel import Panel
 from src.auth import AuthManager
 from src.post import PostManager
 from src.download import DownloadManager
 from src.uniqueize import UniqueManager
-from config import load_config, load_usernames
-from logger import setup_logger
-
-logger = setup_logger()
-
-console = Console()
+from config import load_config
+from console import console
 
 
 class ReelsCloner:
@@ -32,7 +27,8 @@ class ReelsCloner:
 
     async def start(self) -> None:
         await self._auth()
-        await self._get_last_videos(self.username)
+        videos = await self._get_last_videos(self.username)
+        console.log(videos)
 
 
 class ReelsPoster:
@@ -75,8 +71,6 @@ async def main() -> None:
             console.print("\n[bold]Скачивание видео[/bold]", style="green")
             cloner = ReelsCloner(config, username)
             await cloner.start()
-
-            # await cloner.download_manager.download_reels(usernames)
 
         elif action == 2:
             console.print("\n[bold]Публикация видео[/bold]", style="green")

@@ -1,13 +1,11 @@
 import os
 import uuid
 import random
-import logging
 import numpy as np
 from typing import Dict
 from PIL import ImageEnhance, Image
 from moviepy.editor import VideoFileClip
-
-logger = logging.getLogger("ReelsCloner")
+from console import console
 
 
 class UniqueManager:
@@ -16,7 +14,7 @@ class UniqueManager:
 
     def unique_video(self, video_path: str) -> str:
         if not os.path.exists(video_path):
-            logger.error(f"Файл {video_path} не найден!")
+            console.print(f"[bold red]Файл {video_path} не найден![/bold red]")
             raise FileNotFoundError(f"Файл {video_path} не найден!")
 
         unique_filename = str(uuid.uuid4()) + '.mp4'

@@ -1,11 +1,9 @@
 import os
 import sys
-import logging
 from typing import Dict
 from instagrapi import Client
 from instagrapi.exceptions import LoginRequired, ChallengeRequired
-
-logger = logging.getLogger("ReelsCloner")
+from console import console
 
 
 class AuthManager:
@@ -18,9 +16,9 @@ class AuthManager:
         if self.config.get('proxy'):
             proxy_url = self.config['proxy']
             self.client.set_proxy(proxy_url)
-            logger.info(f"Прокси настроены: {proxy_url}")
+            console.print(f"[green]Прокси настроены:[/] {proxy_url}")
 
-        logger.success(
+        console.print(
             f"Прокси: {'активен' if config.get('proxy') else 'отсутствует'}"
         )
 
@@ -28,12 +26,12 @@ class AuthManager:
         try:
             if os.path.exists(session_file):
                 session = self.client.load_settings(session_file)
-                logger.info("Сессия успешно загружена из файла")
+                console.print("[green]Сессия успешно загружена из файла[/]")
                 return session
-            logger.warning("Файл сессии не найден")
+            console.print("[yellow]Файл сессии не найден[/]")
             return False
         except Exception as e:
-            logger.error(f"Ошибка загрузки сессии: {str(e)}")
+            console.print(f"[red]Ошибка загрузки сессии:[/] {str(e)}")
             return False
 
     def login(self) -> bool:
@@ -45,7 +43,7 @@ class AuthManager:
             try:
                 self.client.set_settings(session)
                 self.client.login(self.config['username'], self.config['password'])
-                logger.success(f"Успешная авторизация: {self.config['username']}")
+                console.print(f"[green]Успешная авторизация:[/] {self.config['username']}")
                 try:
                     self.client.get_timeline_feed()
                 except LoginRequired:
@@ -55,31 +53,31 @@ class AuthManager:
                     self.client.login(self.config['username'], self.config['password'])
                 login_via_session = True
             except ChallengeRequired:
-                logger.error("Нужно подтверждение аккаунта по смс")
+                console.print("[red]Нужно подтверждение аккаунта по смс[/]")
                 sys.exit(1)
             except Exception as e:
                 if "Failed to parse" in str(e):
-                    logger.error("Прокси не валидные")
+                    console.print("[red]Прокси не валидные[/]")
                     sys.exit(1)
                 elif "waif" in str(e):
-                    logger.warning("Подождите несколько минут и попробуйте еще раз")
+                    console.print("[yellow]Подождите несколько минут и попробуйте еще раз[/]")
                     sys.exit(1)
                 elif "submit_phone" in str(e):
-                    logger.error("Нужно подтверждение аккаунта по смс")
+                    console.print("[red]Нужно подтверждение аккаунта по смс[/]")
                     sys.exit(1)
-                logger.error(f"Ошибка при авторизации: {e}")
+                console.print(f"[red]Ошибка при авторизации:[/] {e}")
 
         if not login_via_session:
             try:
-                logger.info("Пробуем зайти через логин/пароль")
+                console.print("[yellow]Пробуем зайти через логин/пароль[/]")
                 if self.client.login(self.config['username'], self.config['password']):
                     login_via_pw = True
                     self.client.dump_settings(self.session_file)
             except Exception as e:
-                logger.error(f"Ошибка при входе через логин и пароль: {e}")
+                console.print(f"[red]Ошибка при входе через логин и пароль:[/] {e}")
 
         if not login_via_pw and not login_via_session:
-            logger.error("Не удалось войти ни через сессию, ни через пароль")
+            console.print("[red]Не удалось войти ни через сессию, ни через пароль[/]")
             raise Exception("Couldn't login user with either password or session")
 
         return True

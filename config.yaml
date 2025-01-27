@@ -2,7 +2,7 @@ username: "sxemshiki" # Имя пользователя Instagram, от имен
 password: "1998artemQ" # Пароль от аккаунта Instagram
 session_name: "session.json" # Название файла сессии
 
-videos_to_download: 30 # Количество последних рилсов к скачиванию
+videos_to_download: 10 # Количество последних рилсов к скачиванию
 download_folder: "downloads" # Путь к папке для сохранения скачанных видео
 image_name: "image.png" # Картинка для уникализации
 
