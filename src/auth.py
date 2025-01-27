@@ -16,10 +16,9 @@ class AuthManager:
         if self.config.get('proxy'):
             proxy_url = self.config['proxy']
             self.client.set_proxy(proxy_url)
-            console.print(f"[green]Прокси настроены:[/] {proxy_url}")
 
         console.print(
-            f"Прокси: {'активен' if config.get('proxy') else 'отсутствует'}"
+            f"Прокси: {'активен' if self.config.get('proxy') else 'отсутствует'}"
         )
 
     def load_session(self, session_file: str = 'session.json') -> bool:
@@ -28,10 +27,10 @@ class AuthManager:
                 session = self.client.load_settings(session_file)
                 console.print("[green]Сессия успешно загружена из файла[/]")
                 return session
-            console.print("[yellow]Файл сессии не найден[/]")
+            console.print("[yellow]Файл сессии не найден. Попробуем авторизацию через логин/пароль.[/]")
             return False
         except Exception as e:
-            console.print(f"[red]Ошибка загрузки сессии:[/] {str(e)}")
+            console.print(f"[red]Ошибка при загрузке сессии:[/] {str(e)}")
             return False
 
     def login(self) -> bool:
@@ -43,7 +42,7 @@ class AuthManager:
             try:
                 self.client.set_settings(session)
                 self.client.login(self.config['username'], self.config['password'])
-                console.print(f"[green]Успешная авторизация:[/] {self.config['username']}")
+                console.print(f"Авторизация прошла успешно: {self.config['username']}", style="bold blue")
                 try:
                     self.client.get_timeline_feed()
                 except LoginRequired:
@@ -53,31 +52,32 @@ class AuthManager:
                     self.client.login(self.config['username'], self.config['password'])
                 login_via_session = True
             except ChallengeRequired:
-                console.print("[red]Нужно подтверждение аккаунта по смс[/]")
+                console.print("[red]Необходимо подтверждение через СМС для аккаунта[/]")
                 sys.exit(1)
             except Exception as e:
                 if "Failed to parse" in str(e):
-                    console.print("[red]Прокси не валидные[/]")
+                    console.print("[red]Прокси не валидные. Пожалуйста, проверьте настройки[/]")
                     sys.exit(1)
                 elif "waif" in str(e):
-                    console.print("[yellow]Подождите несколько минут и попробуйте еще раз[/]")
+                    console.print("[yellow]Подождите несколько минут и попробуйте снова[/]")
                     sys.exit(1)
                 elif "submit_phone" in str(e):
-                    console.print("[red]Нужно подтверждение аккаунта по смс[/]")
+                    console.print("[red]Нужно подтверждение по смс[/]")
                     sys.exit(1)
                 console.print(f"[red]Ошибка при авторизации:[/] {e}")
 
         if not login_via_session:
             try:
-                console.print("[yellow]Пробуем зайти через логин/пароль[/]")
+                console.print("[yellow]Попытка входа через логин и пароль...[/]")
                 if self.client.login(self.config['username'], self.config['password']):
                     login_via_pw = True
                     self.client.dump_settings(self.session_file)
+                    console.print(f"[green]Успешный вход через логин/пароль:[/] {self.config['username']}")
             except Exception as e:
                 console.print(f"[red]Ошибка при входе через логин и пароль:[/] {e}")
 
         if not login_via_pw and not login_via_session:
-            console.print("[red]Не удалось войти ни через сессию, ни через пароль[/]")
+            console.print("[red]Не удалось авторизоваться ни через сессию, ни через логин/пароль[/]")
             raise Exception("Couldn't login user with either password or session")
 
         return True
