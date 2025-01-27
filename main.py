@@ -21,16 +21,9 @@ class ReelsCloner:
     async def _auth(self) -> None:
         self.auth_manager.login()
 
-    async def _get_last_videos(self, username: str) -> None:
-        videos = await self.download_manager.get_last_videos(username)
-        return videos
-
     async def start(self) -> None:
         await self._auth()
-        videos = await self._get_last_videos(self.username)
-        if not videos:
-            return
-        console.print(videos)
+        await self.download_manager._main(self.username)
 
 
 class ReelsPoster:
