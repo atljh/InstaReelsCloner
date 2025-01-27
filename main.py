@@ -1,5 +1,5 @@
 import asyncio
-from typing import Dict, List
+from typing import Dict
 from rich.console import Console
 from rich.prompt import Prompt
 from rich.panel import Panel
@@ -16,24 +16,23 @@ console = Console()
 
 
 class ReelsCloner:
-    def __init__(self, config: Dict):
+    def __init__(self, config: Dict, username: str):
         self.config = config
+        self.username = username
         self.auth_manager = AuthManager(config)
         self.download_manager = DownloadManager(self.auth_manager.client, config)
         self.unique_manager = UniqueManager(config)
 
-    def _auth(self) -> None:
+    async def _auth(self) -> None:
         self.auth_manager.login()
 
-    async def _get_last_videos(self, usernames: List[str]) -> None:
-        videos = []
-        for username in usernames:
-            video = await self.download_manager.get_last_videos(username)
-            videos.append(video)
+    async def _get_last_videos(self, username: str) -> None:
+        videos = await self.download_manager.get_last_videos(username)
         return videos
 
-    def start(self) -> None:
-        self._auth()
+    async def start(self) -> None:
+        await self._auth()
+        await self._get_last_videos(self.username)
 
 
 class ReelsPoster:
@@ -72,11 +71,10 @@ async def main() -> None:
         action = display_menu()
 
         if action == 1:
+            username = Prompt.ask("Введите юзернейм")
             console.print("\n[bold]Скачивание видео[/bold]", style="green")
-            cloner = ReelsCloner(config)
-            cloner.start()
-
-            usernames = load_usernames()
+            cloner = ReelsCloner(config, username)
+            await cloner.start()
 
             # await cloner.download_manager.download_reels(usernames)
 

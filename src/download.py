@@ -1,5 +1,4 @@
 import os
-import json
 import logging
 from typing import Dict, List, Optional, Tuple
 from instagrapi import Client
@@ -11,28 +10,13 @@ class DownloadManager:
     def __init__(self, client: Client, config: Dict):
         self.client = client
         self.config = config
-        self.videos_to_download = self.config.videos_to_download
+        self.videos_to_download = self.config.get('videos_to_download', 10)
         self.last_processed_videos_file = 'last_processed_videos.json'
 
     async def get_last_videos(self, username: str) -> List:
         user_info_dict = self.client.user_info_by_username_v1(username).model_dump()
         medias = self.client.user_medias(user_info_dict.get("pk"), amount=self.videos_to_download)
         return medias
-
-    def load_last_processed_videos(self) -> Dict[str, str]:
-        if not os.path.exists(self.last_processed_videos_file):
-            with open(self.last_processed_videos_file, 'w') as f:
-                json.dump({}, f)
-            return {}
-
-        with open(self.last_processed_videos_file, 'r') as f:
-            return json.load(f)
-
-    def save_last_processed_video(self, username: str, media_pk: str):
-        last_processed_videos = self.load_last_processed_videos()
-        last_processed_videos[username] = media_pk
-        with open(self.last_processed_videos_file, 'w') as f:
-            json.dump(last_processed_videos, f, indent=4)
 
     def download_video(self, media_pk: str, folder: str, username: str) -> Tuple[Optional[str], Optional[str]]:
         try:
