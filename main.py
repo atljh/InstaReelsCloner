@@ -28,7 +28,9 @@ class ReelsCloner:
     async def start(self) -> None:
         await self._auth()
         videos = await self._get_last_videos(self.username)
-        console.log(videos)
+        if not videos:
+            return
+        console.print(videos)
 
 
 class ReelsPoster:
@@ -48,7 +50,6 @@ def display_welcome_message() -> None:
 
 
 def display_menu() -> int:
-    console.print("\n[bold]Меню:[/bold]")
     console.print("1. Скачать видео", style="bold blue")
     console.print("2. Загружать видео", style="bold blue")
     console.print("3. Выйти", style="bold red")
@@ -67,8 +68,8 @@ async def main() -> None:
         action = display_menu()
 
         if action == 1:
-            username = Prompt.ask("Введите юзернейм")
-            console.print("\n[bold]Скачивание видео[/bold]", style="green")
+            username = Prompt.ask("Введите юзернейм").replace(" ", "")
+            console.print(f"\n[bold]Скачивание видео пользователя {username}[/bold]", style="green")
             cloner = ReelsCloner(config, username)
             await cloner.start()
 

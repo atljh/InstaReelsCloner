@@ -1,5 +1,7 @@
-import os
-from typing import Dict, List, Optional, Tuple
+import aiohttp
+import aiofiles
+from pathlib import Path
+from typing import Dict, List, Optional
 from instagrapi import Client
 from instagrapi.exceptions import UserNotFound
 from console import console
@@ -11,7 +13,7 @@ class DownloadManager:
         self.config = config
         self.videos_to_download = self.config.get('videos_to_download', 10)
 
-    async def _validate_user(self, username: str) -> Optional[Dict]:
+    async def _validate_user(self, username: str) -> Optional[Dict] | None:
         try:
             user_info = self.client.user_info_by_username_v1(username)
             user_info_dict = user_info.model_dump()
@@ -24,10 +26,10 @@ class DownloadManager:
 
         except UserNotFound:
             console.print(f"[bold red]Пользователь {username} не найден[/bold red]")
-            raise
+            return None
         except Exception as e:
             console.print(f"[bold red]Ошибка при проверке пользователя {username}: {e}[/bold red]")
-            raise
+            return None
 
     async def get_last_videos(self, username: str) -> List:
         user_info_dict = await self._validate_user(username)
@@ -36,30 +38,23 @@ class DownloadManager:
 
         medias = self.client.user_medias(user_info_dict.get("pk"), amount=self.videos_to_download)
 
-        videos = [media for media in medias if media.media_type == 2]
+        videos = [video.video_url for video in medias if video.media_type == 2 and video.video_url]
         if not videos:
             (f"[bold red]У пользователя {username} нет рилсов[/bold red]")
             return []
-
         return videos
 
-    def download_video(self, media_pk: str, folder: str, username: str) -> Tuple[Optional[str], Optional[str]]:
+    async def download_video(url: str, save_path: str) -> bool:
         try:
-            media_info = self.client.media_info(media_pk)
-            if media_info.media_type == 2:
-                folder = f"{folder}/{username}"
-                os.makedirs(folder, exist_ok=True)
-                video_url = media_info.video_url
-                video_path = os.path.join(folder, str(media_pk))
-                self.client.video_download_by_url(video_url, video_path)
-                video_path = video_path + ".mp4"
-                if os.path.exists(video_path):
-                    console.print(f"Видео скачано | Пользователь: {username} | ID: {media_pk}")
-                    return video_path, media_info.caption_text
-                else:
-                    console.print(f"Ошибка: файл {video_path} не был создан!")
-                    return None, None
-            return None, None
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        Path(save_path).parent.mkdir(parents=True, exist_ok=True)
+                        async with aiofiles.open(save_path, "wb") as file:
+                            await file.write(await response.read())
+                        return True
+                    else:
+                        console.print(f"[red]Ошибка загрузки видео: {url} (Статус: {response.status})[/red]")
         except Exception as e:
-            console.print(f"Ошибка загрузки видео: {str(e)}")
-            return None, None
+            console.print(f"[red]Ошибка: {e} при загрузке видео: {url}[/red]")
+        return False
