@@ -5,5 +5,6 @@ session_name: "session.json" # Название файла сессии
 videos_to_download: 30 # Количество последних рилсов к скачиванию
 download_folder: "downloads" # Путь к папке для сохранения скачанных видео
 image_name: "image.png" # Картинка для уникализации
+uniqueize: "true" # true\false
 
 # proxy: socks5://B8SHnMHa:N1TAkpN2@109.205.184.61:64491
