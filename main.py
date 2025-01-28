@@ -62,7 +62,6 @@ async def main() -> None:
 
         if action == 1:
             username = Prompt.ask("Введите юзернейм").replace(" ", "")
-            console.print(f"\n[bold]Скачивание видео пользователя {username}[/bold]", style="green")
             cloner = ReelsCloner(config, username)
             await cloner.start()
 

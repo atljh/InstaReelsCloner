@@ -1,7 +1,4 @@
 import asyncio
-import aiohttp
-import aiofiles
-from urllib.parse import urlparse
 from pathlib import Path
 from typing import Dict, List, Optional
 from instagrapi import Client
@@ -59,10 +56,7 @@ class DownloadManager:
             console.print(f"[red]Ошибка при загрузке видео: {url}, {e}[/red]")
             return False
 
-    async def _main(self, username: str) -> bool:
-        video_urls = await self.get_last_videos(username)
-        if not video_urls:
-            return False
+    async def handle_videos(self, video_urls: List) -> None:
         tasks = []
         for i, url in enumerate(video_urls):
             save_path = Path(self.download_dir) / f"video_{i + 1}.mp4"
@@ -74,5 +68,25 @@ class DownloadManager:
                 console.print(f"[red]Ошибка при загрузке видео {video_urls[idx]}: {result}[/red]")
             elif result:
                 console.print(f"[green]Видео {idx + 1} успешно загружено.[/green]")
+                self.overlay_image_on_video(save_path)
             else:
                 console.print(f"[red]Не удалось загрузить видео {idx + 1}.[/red]")
+
+    def overlay_image_on_video(self, video_path: Path) -> None:
+        from moviepy.editor import VideoFileClip, ImageClip, CompositeVideoClip
+
+        try:
+            video = VideoFileClip(str(video_path))
+            image = ImageClip("image.png").set_duration(video.duration).resize(height=100).set_pos(("right", "bottom"))
+            final_video = CompositeVideoClip([video, image])
+            final_video.write_videofile(str(video_path), codec="libx264")
+            console.print(f"[green]Изображение наложено на видео: {video_path}[/green]")
+        except Exception as e:
+            console.print(f"[red]Ошибка при наложении изображения на видео {video_path}: {e}[/red]")
+
+    async def _main(self, username: str) -> bool:
+        console.print(f"\n[bold]Скачивание видео пользователя {username}[/bold]", style="green")
+        video_urls = await self.get_last_videos(username)
+        if not video_urls:
+            return False
+        await self.handle_videos(video_urls)

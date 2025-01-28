@@ -4,7 +4,7 @@ import random
 import numpy as np
 from typing import Dict
 from PIL import ImageEnhance, Image
-from moviepy.editor import VideoFileClip
+from moviepy.editor import VideoFileClip, ImageClip, CompositeVideoClip, vfx
 from console import console
 
 
@@ -27,10 +27,15 @@ class UniqueManager:
             img = ImageEnhance.Brightness(img).enhance(1.05)
             return np.array(img)
 
-        clip = clip.fl_image(adjust_contrast_exposure)
-        clip.write_videofile(output_path, codec='libx264', logger=None)
+        clip = clip.fl_image(adjust_contrast_exposure).fx(vfx.speedx, 1.1)
+        clip = clip.fl_image(lambda frame: ImageEnhance.Color(Image.fromarray(frame)).enhance(1.2))
 
-        logger.info(f"Видео уникализировано: {output_path}")
+        image = ImageClip("image.png").set_duration(clip.duration).resize(height=100).set_pos(("right", "bottom"))
+        final_clip = CompositeVideoClip([clip, image])
+
+        final_clip.write_videofile(output_path, codec='libx264', logger=None)
+
+        console.print(f"Видео уникализировано: {output_path}")
         return output_path
 
     def unique_description(self, description: str) -> str:
@@ -41,5 +46,5 @@ class UniqueManager:
         emojis = ["😊", "🌟", "🔥", "🎉", "💡", "✨", "🚀", "💎"]
         description += f" {random.choice(emojis)}"
 
-        logger.info(f"Описание уникализировано: {description}")
+        console.print(f"Описание уникализировано: {description}")
         return description
