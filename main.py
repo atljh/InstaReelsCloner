@@ -21,9 +21,13 @@ class ReelsCloner:
     async def _auth(self) -> None:
         self.auth_manager.login()
 
+    async def _logout(self) -> None:
+        self.auth_manager.logout()
+
     async def start(self) -> None:
         await self._auth()
         await self.download_manager._main(self.username)
+        await self._logout()
 
 
 class ReelsPoster:
