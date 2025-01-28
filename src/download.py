@@ -53,55 +53,11 @@ class DownloadManager:
     async def download_video(self, url: str, save_path: str) -> bool:
         try:
             Path(save_path).parent.mkdir(parents=True, exist_ok=True)
-            self.video_download_by_url(url, save_path)
+            self.client.video_download_by_url(url, save_path)
             return True
         except Exception as e:
             console.print(f"[red]Ошибка при загрузке видео: {url}, {e}[/red]")
             return False
-
-    async def video_download_by_url(
-        self, url: str, filename: str = "", folder: Path = ""
-    ) -> Path:
-        """
-        Асинхронная загрузка видео по URL.
-
-        Parameters
-        ----------
-        url: str
-            URL медиафайла
-        filename: str, optional
-            Имя файла для сохранения
-        folder: Path, optional
-            Директория, куда будет сохранен файл
-
-        Returns
-        -------
-        Path
-            Полный путь до загруженного файла
-        """
-        url = str(url)
-        fname = urlparse(url).path.rsplit("/", 1)[1]
-        filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
-        path = Path(folder) / filename
-        Path(folder).mkdir(parents=True, exist_ok=True)
-
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=self.request_timeout)) as session:
-            async with session.get(url) as response:
-                if response.status != 200:
-                    raise Exception(f"Failed to download video. HTTP Status: {response.status}")
-
-                content_length = response.content_length
-                file_content = await response.read()
-
-                if content_length and content_length != len(file_content):
-                    raise Exception(
-                        f"Broken file: Content-Length={content_length}, but received {len(file_content)} bytes."
-                    )
-
-                with open(path, "wb") as f:
-                    f.write(file_content)
-
-        return path.resolve()
 
     async def _main(self, username: str) -> bool:
         video_urls = await self.get_last_videos(username)
