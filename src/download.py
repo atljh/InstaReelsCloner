@@ -1,6 +1,7 @@
 import asyncio
 import aiohttp
 import aiofiles
+from urllib.parse import urlparse
 from pathlib import Path
 from typing import Dict, List, Optional
 from instagrapi import Client
@@ -11,6 +12,7 @@ from console import console
 class DownloadManager:
     def __init__(self, client: Client, config: Dict):
         self.client = client
+        self.request_timeout = 30
         self.config = config
         self.retries = 3
         self.delay = 5
@@ -49,32 +51,57 @@ class DownloadManager:
         return videos
 
     async def download_video(self, url: str, save_path: str) -> bool:
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-            "Referer": "https://www.instagram.com/",
-        }
-        for attempt in range(1, self.retries + 1):
-            try:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(url, headers=headers) as response:
-                        if response.status == 200:
-                            Path(save_path).parent.mkdir(parents=True, exist_ok=True)
-                            async with aiofiles.open(save_path, "wb") as file:
-                                await file.write(await response.read())
-                            console.print(f"[green]Видео успешно загружено: {save_path}[/green]")
-                            return True
-                        else:
-                            pass
-            except Exception as e:
-                console.print(
-                    f"[yellow]Попытка {attempt}: Ошибка: {e} при загрузке видео: {url}[/yellow]"
-                )
+        try:
+            Path(save_path).parent.mkdir(parents=True, exist_ok=True)
+            self.video_download_by_url(url, save_path)
+            return True
+        except Exception as e:
+            console.print(f"[red]Ошибка при загрузке видео: {url}, {e}[/red]")
+            return False
 
-            if attempt < self.retries:
-                console.print(f"{response.status}")
-                await asyncio.sleep(self.delay)
+    async def video_download_by_url(
+        self, url: str, filename: str = "", folder: Path = ""
+    ) -> Path:
+        """
+        Асинхронная загрузка видео по URL.
 
-        return False
+        Parameters
+        ----------
+        url: str
+            URL медиафайла
+        filename: str, optional
+            Имя файла для сохранения
+        folder: Path, optional
+            Директория, куда будет сохранен файл
+
+        Returns
+        -------
+        Path
+            Полный путь до загруженного файла
+        """
+        url = str(url)
+        fname = urlparse(url).path.rsplit("/", 1)[1]
+        filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
+        path = Path(folder) / filename
+        Path(folder).mkdir(parents=True, exist_ok=True)
+
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=self.request_timeout)) as session:
+            async with session.get(url) as response:
+                if response.status != 200:
+                    raise Exception(f"Failed to download video. HTTP Status: {response.status}")
+
+                content_length = response.content_length
+                file_content = await response.read()
+
+                if content_length and content_length != len(file_content):
+                    raise Exception(
+                        f"Broken file: Content-Length={content_length}, but received {len(file_content)} bytes."
+                    )
+
+                with open(path, "wb") as f:
+                    f.write(file_content)
+
+        return path.resolve()
 
     async def _main(self, username: str) -> bool:
         video_urls = await self.get_last_videos(username)
