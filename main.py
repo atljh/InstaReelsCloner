@@ -34,6 +34,7 @@ class ReelsCloner:
 
     async def start(self) -> None:
         # await self.download_videos()
+        console.print("Скачивание завершено. Уникализация видео...")
         await self.uniqueize_videos()
 
 

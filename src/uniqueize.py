@@ -3,6 +3,7 @@ import uuid
 import random
 import numpy as np
 from typing import Dict
+from concurrent.futures import ProcessPoolExecutor
 from PIL import ImageEnhance, Image
 from moviepy.editor import VideoFileClip, ImageClip, CompositeVideoClip, vfx
 from console import console
@@ -11,6 +12,7 @@ from console import console
 class UniqueManager:
     def __init__(self, config: Dict):
         self.config = config
+        self.video_dir = config.get('download_folder')
 
     def unique_video(self, video_path: str) -> str:
         if not os.path.exists(video_path):
@@ -18,7 +20,7 @@ class UniqueManager:
             raise FileNotFoundError(f"Файл {video_path} не найден!")
 
         unique_filename = str(uuid.uuid4()) + '.mp4'
-        output_path = os.path.join(self.config['download_folder'], unique_filename)
+        output_path = os.path.join(self.video_dir, unique_filename)
         clip = VideoFileClip(video_path)
 
         def adjust_contrast_exposure(frame):
@@ -60,19 +62,23 @@ class UniqueManager:
         console.print(f"Описание уникализировано: {description}")
         return description
 
-    def uniqueize_all_videos(self) -> None:
-        video_dir = self.config.get('download_folder', 'downloads/videos')
-        if not os.path.exists(video_dir):
-            console.print(f"[bold red]Директория {video_dir} не найдена![/bold red]")
+    def uniqueize_all_videos(self):
+        if not os.path.exists(self.video_dir):
+            console.print(f"[bold red]Директория {self.video_dir} не найдена![/bold red]")
             return
 
-        for video_file in os.listdir(video_dir):
-            video_path = os.path.join(video_dir, video_file)
-            if os.path.isfile(video_path) and video_file.endswith('.mp4'):
-                console.print(f"[yellow]Уникализация видео: {video_file}[/yellow]")
-                self.unique_video(video_path)
+        video_files = [os.path.join(self.video_dir, f) for f in os.listdir(self.video_dir) if f.endswith('.mp4')]
 
-        console.print("[green]Все видео в директории уникализированы.[/green]")
+        if not video_files:
+            console.print("[yellow]Нет видео для обработки.[/yellow]")
+            return
+
+        console.print(f"[yellow]Начинаем обработку {len(video_files)} видео...[/yellow]")
+
+        with ProcessPoolExecutor(max_workers=4) as executor:
+            results = list(executor.map(self.unique_video, video_files))
+
+        console.print(f"[green]Обработка завершена. Уникализировано {sum(1 for r in results if r)} видео.[/green]")
 
     def _main(self) -> None:
         self.uniqueize_all_videos()
