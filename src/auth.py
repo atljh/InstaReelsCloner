@@ -85,8 +85,6 @@ class AuthManager:
     def logout(self) -> None:
         try:
             self.client.logout()
-            if os.path.exists(self.session_file):
-                os.remove(self.session_file)
-            console.print("[green]Выход из аккаунта выполнен успешно и файл сессии удален.[/]")
+            console.print("[green]Выход из аккаунта выполнен успешно[/]")
         except Exception as e:
             console.print(f"[red]Ошибка при выходе из аккаунта:[/] {e}")
