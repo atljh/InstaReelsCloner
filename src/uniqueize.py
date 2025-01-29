@@ -13,6 +13,9 @@ class UniqueManager:
     def __init__(self, config: Dict):
         self.config = config
         self.video_dir = config.get('download_folder')
+        self.output_dir = config.get('output_folder', 'downloads/unique_videos')
+
+        os.makedirs(self.output_dir, exist_ok=True)
 
     def unique_video(self, video_path: str) -> str:
         if not os.path.exists(video_path):
@@ -20,7 +23,7 @@ class UniqueManager:
             raise FileNotFoundError(f"Файл {video_path} не найден!")
 
         unique_filename = str(uuid.uuid4()) + '.mp4'
-        output_path = os.path.join(self.video_dir, unique_filename)
+        output_path = os.path.join(self.output_dir, unique_filename)
         clip = VideoFileClip(video_path)
 
         def adjust_contrast_exposure(frame):

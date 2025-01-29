@@ -3,7 +3,8 @@ password: "" # Пароль от аккаунта Instagram
 session_name: "session.json" # Название файла сессии
 
 videos_to_download: 30 # Количество последних рилсов к скачиванию
-download_folder: "downloads" # Путь к папке для сохранения скачанных видео
+download_folder: "downloads/videos" # Путь к папке для сохранения скачанных видео
+output_folder": "downloads/unique_videos" # Путь к папке для сохранения уникализированных видео
 image_name: "image.png" # Картинка для уникализации
 uniqueize: "true" # true\false
 
