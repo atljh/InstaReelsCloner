@@ -28,9 +28,20 @@ class UniqueManager:
             return np.array(img)
 
         clip = clip.fl_image(adjust_contrast_exposure).fx(vfx.speedx, 1.1)
-        clip = clip.fl_image(lambda frame: ImageEnhance.Color(Image.fromarray(frame)).enhance(1.2))
 
-        image = ImageClip("image.png").set_duration(clip.duration).resize(height=100).set_pos(("right", "bottom"))
+        def adjust_color(frame):
+            img = Image.fromarray(frame)
+            img = ImageEnhance.Color(img).enhance(1.2)
+            return np.array(img)
+
+        clip = clip.fl_image(adjust_color)
+
+        image = (
+            ImageClip("image.png")
+            .set_duration(clip.duration)
+            .resize(height=100)
+            .set_pos(("right", "bottom"))
+        )
         final_clip = CompositeVideoClip([clip, image])
 
         final_clip.write_videofile(output_path, codec='libx264', logger=None)
@@ -48,3 +59,20 @@ class UniqueManager:
 
         console.print(f"Описание уникализировано: {description}")
         return description
+
+    def uniqueize_all_videos(self) -> None:
+        video_dir = self.config.get('download_folder', 'downloads/videos')
+        if not os.path.exists(video_dir):
+            console.print(f"[bold red]Директория {video_dir} не найдена![/bold red]")
+            return
+
+        for video_file in os.listdir(video_dir):
+            video_path = os.path.join(video_dir, video_file)
+            if os.path.isfile(video_path) and video_file.endswith('.mp4'):
+                console.print(f"[yellow]Уникализация видео: {video_file}[/yellow]")
+                self.unique_video(video_path)
+
+        console.print("[green]Все видео в директории уникализированы.[/green]")
+
+    def _main(self) -> None:
+        self.uniqueize_all_videos()

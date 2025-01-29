@@ -24,10 +24,17 @@ class ReelsCloner:
     async def _logout(self) -> None:
         self.auth_manager.logout()
 
-    async def start(self) -> None:
+    async def download_videos(self) -> None:
         await self._auth()
         await self.download_manager._main(self.username)
         await self._logout()
+
+    async def uniqueize_videos(self) -> None:
+        self.unique_manager._main()
+
+    async def start(self) -> None:
+        # await self.download_videos()
+        await self.uniqueize_videos()
 
 
 class ReelsPoster:

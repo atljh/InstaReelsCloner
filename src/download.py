@@ -14,7 +14,7 @@ class DownloadManager:
         self.retries = 3
         self.delay = 5
         self.videos_to_download = self.config.get('videos_to_download', 10)
-        self.download_dir = Path("downloads/videos")
+        self.download_dir = Path("downloads")
 
     async def _validate_user(self, username: str) -> Optional[Dict] | None:
         try:
