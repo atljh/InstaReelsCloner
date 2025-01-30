@@ -19,23 +19,29 @@ class ReelsCloner:
         self.download_manager = DownloadManager(self.auth_manager.client, config)
         self.unique_manager = UniqueManager(config)
 
-    async def _login(self) -> None:
-        self.auth_manager.login()
+    async def _login(self) -> bool:
+        return self.auth_manager.login()
 
     async def _logout(self) -> None:
         self.auth_manager.logout()
 
-    async def download_videos(self) -> None:
-        await self._login()
+    async def download_videos(self) -> bool:
+        result = await self._login()
+        print(result)
+        if not result:
+            return False
         await self.download_manager._main(self.username)
+        console.print("[blue]Скачивание завершено[/]")
         await self._logout()
+        return True
 
     async def uniqueize_videos(self) -> None:
         self.unique_manager._main()
 
     async def start(self) -> None:
-        await self.download_videos()
-        console.print("[blue]Скачивание завершено[/]")
+        result = await self.download_videos()
+        if not result:
+            return
         if not self.config.get("uniqueize", False):
             return
         console.print("[green]Уникализация видео...[/]")
@@ -57,8 +63,13 @@ class ReelsPoster:
     async def post_video(self, video_path: str) -> None:
         await self.post_manager.post_video(video_path)
 
+    async def handle_time(self) -> None:
+        ...
+
     async def start(self) -> None:
-        await self._login()
+        console.print("[bold green]Фоновая задача запущена[/bold green]")
+        while True:
+            await asyncio.sleep(60)
 
 
 def display_welcome_message() -> None:
@@ -66,12 +77,12 @@ def display_welcome_message() -> None:
     console.print("Добро пожаловать! Выберите действие:", style="bold yellow")
 
 
-def display_menu() -> int:
+async def display_menu() -> int:
     console.print("1. Скачать видео", style="bold blue")
     console.print("2. Загружать видео", style="bold blue")
     console.print("3. Выйти", style="bold red")
 
-    choice = Prompt.ask("Введите номер действия", choices=["1", "2", "3"], default="3")
+    choice = await asyncio.to_thread(Prompt.ask, "Введите номер действия", choices=["1", "2", "3"], default="3")
     return int(choice)
 
 
@@ -83,7 +94,7 @@ async def main() -> None:
     background_task = None
 
     while True:
-        action = display_menu()
+        action = await display_menu()
 
         if action == 1:
             username = Prompt.ask("Введите юзернейм").replace(" ", "")
@@ -91,16 +102,22 @@ async def main() -> None:
             await cloner.start()
 
         elif action == 2:
-            console.print("\n[bold]Публикация видео[/bold]", style="green")
-            poster = ReelsPoster(config)
-            await poster.start()
-
-            # await poster.post_manager.post_video("path/to/video.mp4", "Описание")
+            if background_task and not background_task.done():
+                console.print("\n[bold yellow]Публикация уже запущена в фоне.[/bold yellow]")
+            else:
+                console.print("\n[bold green]Запуск публикации видео в фоне...[/bold green]")
+                poster = ReelsPoster(config)
+                background_task = asyncio.create_task(poster.start())
+                console.print("[bold green]Публикация запущена в фоне.[/bold green]")
 
         elif action == 3:
-            console.print("\n[bold]Выход из программы...[/bold]", style="red")
-            if background_task:
+            console.print("\n[bold red]Выход из программы...[/bold red]")
+            if background_task and not background_task.done():
                 background_task.cancel()
+                try:
+                    await background_task
+                except asyncio.CancelledError:
+                    console.print("[bold yellow]Фоновая задача публикации остановлена.[/bold yellow]")
             break
 
         else:

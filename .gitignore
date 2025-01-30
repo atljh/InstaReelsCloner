@@ -4,3 +4,4 @@ downloads
 *.mp3
 __pycache__
 config.yaml
+*.json

@@ -51,6 +51,7 @@ class AuthManager:
                     self.client.set_uuids(old_session["uuids"])
                     self.client.login(self.config['username'], self.config['password'])
                 login_via_session = True
+
             except ChallengeRequired:
                 console.print("[red]Необходимо подтверждение через СМС для аккаунта[/]")
                 sys.exit(1)
@@ -64,7 +65,8 @@ class AuthManager:
                 elif "submit_phone" in str(e):
                     console.print("[red]Нужно подтверждение по смс[/]")
                     sys.exit(1)
-                console.print(f"[red]Ошибка при авторизации:[/] {e}")
+                console.print(f"[red]Ошибка при авторизации:{e}[/]")
+                return False
 
         if not login_via_session:
             try:
@@ -85,6 +87,8 @@ class AuthManager:
     def logout(self) -> None:
         try:
             self.client.logout()
-            console.print("[green]Выход из аккаунта выполнен успешно[/]")
+            if os.path.exists(self.session_file):
+                os.remove(self.session_file)
+            console.print("[green]Выход из аккаунта выполнен успешно и файл сессии удален.[/]")
         except Exception as e:
             console.print(f"[red]Ошибка при выходе из аккаунта:[/] {e}")
