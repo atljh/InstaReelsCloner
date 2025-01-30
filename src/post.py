@@ -7,29 +7,14 @@ logger = logging.getLogger("ReelsCloner")
 
 class PostManager:
     def __init__(self, client: Client):
-        """
-        Инициализация менеджера для публикации видео.
-
-        Args:
-            client (Client): Клиент instagrapi для взаимодействия с Instagram API.
-        """
         self.client = client
 
-    async def post_video(self, video_path: str, unique_description: str) -> bool:
-        """
-        Публикует уникализированное видео в Instagram.
-
-        Args:
-            video_path (str): Путь к уникализированному видео.
-            unique_description (str): Уникализированное описание видео.
-
-        Returns:
-            bool: True, если публикация прошла успешно, иначе False.
-        """
+    async def post_video(self, video_path: str) -> bool:
+        description = ''
         try:
             self.client.clip_upload(
                 video_path,
-                caption=unique_description,
+                caption=description,
                 thumbnail=None,
                 location=None,
                 extra_data={}

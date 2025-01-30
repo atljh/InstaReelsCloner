@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 from typing import Dict
 from rich.prompt import Prompt
 from rich.panel import Panel
@@ -18,14 +19,14 @@ class ReelsCloner:
         self.download_manager = DownloadManager(self.auth_manager.client, config)
         self.unique_manager = UniqueManager(config)
 
-    async def _auth(self) -> None:
+    async def _login(self) -> None:
         self.auth_manager.login()
 
     async def _logout(self) -> None:
         self.auth_manager.logout()
 
     async def download_videos(self) -> None:
-        await self._auth()
+        await self._login()
         await self.download_manager._main(self.username)
         await self._logout()
 
@@ -47,9 +48,17 @@ class ReelsPoster:
         self.auth_manager = AuthManager(config)
         self.post_manager = PostManager(self.auth_manager.client)
 
-    async def post_video(self, video_path: str, original_description: str) -> None:
-        unique_desc = self.unique_manager.unique_description(original_description)
-        await self.post_manager.post_video(video_path, unique_desc)
+    async def _login(self) -> None:
+        self.auth_manager.login()
+
+    async def _logout(self) -> None:
+        self.auth_manager.logout()
+
+    async def post_video(self, video_path: str) -> None:
+        await self.post_manager.post_video(video_path)
+
+    async def start(self) -> None:
+        await self._login()
 
 
 def display_welcome_message() -> None:
@@ -69,8 +78,9 @@ def display_menu() -> int:
 async def main() -> None:
 
     display_welcome_message()
-
     config = load_config()
+
+    background_task = None
 
     while True:
         action = display_menu()
@@ -83,12 +93,14 @@ async def main() -> None:
         elif action == 2:
             console.print("\n[bold]Публикация видео[/bold]", style="green")
             poster = ReelsPoster(config)
-            poster.auth_manager.login()
+            await poster.start()
 
             # await poster.post_manager.post_video("path/to/video.mp4", "Описание")
 
         elif action == 3:
             console.print("\n[bold]Выход из программы...[/bold]", style="red")
+            if background_task:
+                background_task.cancel()
             break
 
         else:
