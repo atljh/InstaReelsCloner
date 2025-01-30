@@ -1,9 +1,7 @@
 import yaml
 import sys
-import logging
 from typing import List, Dict
-
-logger = logging.getLogger("ReelsCloner")
+from console import console
 
 
 def load_config(config_file: str = 'config.yaml') -> Dict:
@@ -12,10 +10,10 @@ def load_config(config_file: str = 'config.yaml') -> Dict:
             config = yaml.safe_load(file)
             return config
     except FileNotFoundError:
-        logger.error(f"Конфигурационный файл '{config_file}' не найден.")
+        console.print(f"[red]Конфигурационный файл '{config_file}' не найден.[/]")
         sys.exit(1)
     except yaml.YAMLError as e:
-        logger.error(f"Ошибка при чтении YAML-файла: {e}")
+        console.print(f"[red]Ошибка при чтении YAML-файла: {e}[red]")
         sys.exit(1)
 
 
@@ -28,10 +26,10 @@ def load_usernames(usernames_file: str = 'usernames.txt') -> List[str]:
                 if line and not line.startswith("#"):
                     usernames.append(line)
         if not len(usernames):
-            logger.warning("Ключевые слова не найдены")
+            console.print("[red]Аккаунты не найдены[/]")
             sys.exit(1)
-        logger.success(f"Загружено {len(usernames)} аккаунтов для мониторинга")
+        console.print(f"Загружено {len(usernames)} аккаунтов для мониторинга")
         return usernames
     except FileNotFoundError:
-        logger.error(f"Файл {usernames_file} не найден")
+        console.print(f"[red]Файл {usernames_file} не найден[/]")
         sys.exit(1)
