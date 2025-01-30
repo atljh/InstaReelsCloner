@@ -79,8 +79,12 @@ class ReelsPoster:
         # await self.post_manager.post_video(video_path)
 
     async def post_reels(self, folder: str) -> None:
-        video_files = [f for f in os.listdir(folder) if f.endswith((".mp4", ".mov", ".avi"))]
-        description_files = [f for f in os.listdir(folder) if f.endswith(".txt")]
+        try:
+            video_files = [f for f in os.listdir(folder) if f.endswith((".mp4", ".mov", ".avi"))]
+            description_files = [f for f in os.listdir(folder) if f.endswith(".txt")]
+        except FileNotFoundError:
+            log(f"[red]Папка {folder} не найдена[/]", is_background=True)
+            return
 
         if not video_files:
             print(f"Нет видеофайлов в папке {folder}")
