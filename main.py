@@ -101,9 +101,13 @@ class ReelsPoster:
     async def handle_time(self) -> None:
         current_time = datetime.now().strftime("%H:%M")
         if current_time in self.folder_1_times:
+            self.auth_manager.login()
             await self.post_reels(self.folder_1, self.folder_1_descriptions)
+            self.auth_manager.logout()
         elif current_time in self.folder_2_times:
+            self.auth_manager.login()
             await self.post_reels(self.folder_2, self.folder_2_descriptions)
+            self.auth_manager.logout()
 
     async def start(self) -> None:
         while True:
