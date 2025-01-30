@@ -5,3 +5,5 @@ downloads
 __pycache__
 config.yaml
 *.json
+*.mp4
+*.jpg

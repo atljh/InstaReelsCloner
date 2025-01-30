@@ -2,7 +2,7 @@ import os
 import asyncio
 import random
 from datetime import datetime
-from typing import Dict
+from typing import Dict, List
 from rich.prompt import Prompt
 from rich.panel import Panel
 from src.auth import AuthManager
@@ -75,13 +75,11 @@ class ReelsPoster:
         self.auth_manager.logout()
 
     async def post_video(self, video_path: str, description: str) -> None:
-        log("Пост видео", is_background=True)
-        # await self.post_manager.post_video(video_path)
+        await self.post_manager.post_video(video_path, description)
 
-    async def post_reels(self, folder: str) -> None:
+    async def post_reels(self, folder: str, descriptions: List[str]) -> None:
         try:
             video_files = [f for f in os.listdir(folder) if f.endswith((".mp4", ".mov", ".avi"))]
-            description_files = [f for f in os.listdir(folder) if f.endswith(".txt")]
         except FileNotFoundError:
             log(f"[red]Папка {folder} не найдена[/]", is_background=True)
             return
@@ -90,26 +88,22 @@ class ReelsPoster:
             print(f"Нет видеофайлов в папке {folder}")
             return
 
-        if not description_files:
+        if not descriptions:
             print(f"Нет описаний в папке {folder}, постинг без описания")
             description = ""
-        else:
-            random_description_file = random.choice(description_files)
-            with open(os.path.join(folder, random_description_file), "r", encoding="utf-8") as f:
-                description = f.read().strip()
 
-        random_video = random.choice(video_files)
-        video_path = os.path.join(folder, random_video)
-
-        print(f"📢 Загружаем видео {random_video} с описанием: {description}")
-        await self.post_video(video_path, description)
+        for video in video_files:
+            description = random.choice(descriptions)
+            video_path = os.path.join(folder, video)
+            print(f"📢 Загружаем видео {video} с описанием: {description}")
+            await self.post_video(video_path, description)
 
     async def handle_time(self) -> None:
         current_time = datetime.now().strftime("%H:%M")
         if current_time in self.folder_1_times:
-            await self.post_reels(self.folder_1)
+            await self.post_reels(self.folder_1, self.folder_1_descriptions)
         elif current_time in self.folder_2_times:
-            await self.post_reels(self.folder_2)
+            await self.post_reels(self.folder_2, self.folder_2_descriptions)
 
     async def start(self) -> None:
         while True:
