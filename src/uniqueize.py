@@ -49,7 +49,7 @@ class UniqueManager:
             final_clip = CompositeVideoClip([clip, image])
             final_clip.write_videofile(output_path, codec='libx264', logger=None)
 
-            console.print(f"[green]Видео уникализировано: {output_path}[/green]")
+            console.print(f"[blue]Видео уникализировано: {output_path}[/blue]")
             return output_path
         except Exception as e:
             console.print(f"[bold red]Ошибка обработки {video_path}: {e}[/bold red]")
