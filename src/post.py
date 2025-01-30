@@ -1,8 +1,6 @@
-import logging
 from instagrapi import Client
 from instagrapi.exceptions import LoginRequired, ChallengeRequired
-
-logger = logging.getLogger("ReelsCloner")
+from console import console
 
 
 class PostManager:
@@ -18,15 +16,15 @@ class PostManager:
                 location=None,
                 extra_data={}
             )
-            logger.success(f"Видео загружено | Путь: {video_path}")
+            console.print(f"[green]Видео загружено | Путь: {video_path}[/]")
             return True
 
         except LoginRequired:
-            logger.error("Ошибка: требуется повторная авторизация.")
+            console.print("[red]Ошибка: требуется повторная авторизация.[/]")
             return False
         except ChallengeRequired:
-            logger.error("Ошибка: требуется подтверждение аккаунта (например, через SMS).")
+            console.print("[red]Ошибка: требуется подтверждение аккаунта (например, через SMS).[/]")
             return False
         except Exception as e:
-            logger.error(f"Ошибка при публикации видео: {str(e)}")
+            console.print(f"[red]Ошибка при публикации видео: {str(e)}[/]")
             return False
