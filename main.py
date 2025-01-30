@@ -1,4 +1,6 @@
+import os
 import asyncio
+import random
 from datetime import datetime
 from typing import Dict
 from rich.prompt import Prompt
@@ -9,6 +11,11 @@ from src.download import DownloadManager
 from src.uniqueize import UniqueManager
 from config import load_config
 from console import console
+
+
+def log(message: str, is_background: bool = False) -> None:
+    prefix = "\n[BG] " if is_background else ""
+    console.print(f"{prefix}{message}")
 
 
 class ReelsCloner:
@@ -26,20 +33,21 @@ class ReelsCloner:
         self.auth_manager.logout()
 
     async def download_videos(self) -> bool:
-        result = await self._login()
-        print(result)
-        if not result:
+        download_res = await self.download_manager._main(self.username)
+        if not download_res:
             return False
-        await self.download_manager._main(self.username)
         console.print("[blue]Скачивание завершено[/]")
-        await self._logout()
         return True
 
     async def uniqueize_videos(self) -> None:
         self.unique_manager._main()
 
     async def start(self) -> None:
+        login_res = await self._login()
+        if not login_res:
+            return
         result = await self.download_videos()
+        await self._logout()
         if not result:
             return
         if not self.config.get("uniqueize", False):
@@ -53,6 +61,12 @@ class ReelsPoster:
         self.config = config
         self.auth_manager = AuthManager(config)
         self.post_manager = PostManager(self.auth_manager.client)
+        self.folder_1 = config["folder_1"]["folder_name"]
+        self.folder_2 = config["folder_2"]["folder_name"]
+        self.folder_1_times = config["folder_1"]["times"]
+        self.folder_2_times = config["folder_2"]["times"]
+        self.folder_1_descriptions = config["folder_1"]["descriptions"]
+        self.folder_2_descriptions = config["folder_2"]["descriptions"]
 
     async def _login(self) -> None:
         self.auth_manager.login()
@@ -60,15 +74,42 @@ class ReelsPoster:
     async def _logout(self) -> None:
         self.auth_manager.logout()
 
-    async def post_video(self, video_path: str) -> None:
-        await self.post_manager.post_video(video_path)
+    async def post_video(self, video_path: str, description: str) -> None:
+        log("Пост видео", is_background=True)
+        # await self.post_manager.post_video(video_path)
+
+    async def post_reels(self, folder: str) -> None:
+        video_files = [f for f in os.listdir(folder) if f.endswith((".mp4", ".mov", ".avi"))]
+        description_files = [f for f in os.listdir(folder) if f.endswith(".txt")]
+
+        if not video_files:
+            print(f"Нет видеофайлов в папке {folder}")
+            return
+
+        if not description_files:
+            print(f"Нет описаний в папке {folder}, постинг без описания")
+            description = ""
+        else:
+            random_description_file = random.choice(description_files)
+            with open(os.path.join(folder, random_description_file), "r", encoding="utf-8") as f:
+                description = f.read().strip()
+
+        random_video = random.choice(video_files)
+        video_path = os.path.join(folder, random_video)
+
+        print(f"📢 Загружаем видео {random_video} с описанием: {description}")
+        await self.post_video(video_path, description)
 
     async def handle_time(self) -> None:
-        ...
+        current_time = datetime.now().strftime("%H:%M")
+        if current_time in self.folder_1_times:
+            await self.post_reels(self.folder_1)
+        elif current_time in self.folder_2_times:
+            await self.post_reels(self.folder_2)
 
     async def start(self) -> None:
-        console.print("[bold green]Фоновая задача запущена[/bold green]")
         while True:
+            await self.handle_time()
             await asyncio.sleep(60)
 
 
@@ -81,13 +122,11 @@ async def display_menu() -> int:
     console.print("1. Скачать видео", style="bold blue")
     console.print("2. Загружать видео", style="bold blue")
     console.print("3. Выйти", style="bold red")
-
     choice = await asyncio.to_thread(Prompt.ask, "Введите номер действия", choices=["1", "2", "3"], default="3")
     return int(choice)
 
 
 async def main() -> None:
-
     display_welcome_message()
     config = load_config()
 
@@ -109,6 +148,7 @@ async def main() -> None:
                 poster = ReelsPoster(config)
                 background_task = asyncio.create_task(poster.start())
                 console.print("[bold green]Публикация запущена в фоне.[/bold green]")
+                await asyncio.sleep(1)
 
         elif action == 3:
             console.print("\n[bold red]Выход из программы...[/bold red]")

@@ -77,3 +77,4 @@ class DownloadManager:
         if not video_urls:
             return False
         await self.handle_videos(video_urls)
+        return True
