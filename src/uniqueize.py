@@ -55,17 +55,6 @@ class UniqueManager:
             console.print(f"[bold red]Ошибка обработки {video_path}: {e}[/bold red]")
             return None
 
-    def unique_description(self, description: str) -> str:
-        if not description:
-            return "😊"
-
-        description = description.title()
-        emojis = ["😊", "🌟", "🔥", "🎉", "💡", "✨", "🚀", "💎"]
-        description += f" {random.choice(emojis)}"
-
-        console.print(f"Описание уникализировано: {description}")
-        return description
-
     def uniqueize_all_videos(self):
         if not os.path.exists(self.video_dir):
             console.print(f"[bold red]Директория {self.video_dir} не найдена![/bold red]")
