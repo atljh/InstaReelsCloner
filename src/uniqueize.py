@@ -19,8 +19,8 @@ class UniqueManager:
         if not os.path.exists(video_path):
             console.print(f"[bold red]Файл {video_path} не найден![/bold red]")
             raise FileNotFoundError(f"Файл {video_path} не найден!")
-        unique_filename = video_path.split('/')[-1]
-        output_path = os.path.join(self.output_dir, unique_filename)
+        file_name = os.path.basename(video_path)
+        output_path = os.path.join(self.output_dir, file_name)
         try:
             clip = VideoFileClip(video_path)
 
