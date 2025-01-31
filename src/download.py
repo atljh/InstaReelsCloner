@@ -67,7 +67,7 @@ class DownloadManager:
             if isinstance(result, Exception):
                 console.print(f"[red]Ошибка при загрузке видео {video_urls[idx]}: {result}[/red]")
             elif result:
-                console.print(f"[blue]Видео {idx + 1} успешно загружено.[/blue]")
+                console.print(f"Видео {idx + 1} успешно загружено")
             else:
                 console.print(f"[red]Не удалось загрузить видео {idx + 1}.[/red]")
 

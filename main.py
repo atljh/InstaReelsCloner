@@ -12,8 +12,8 @@ def display_welcome_message() -> None:
 
 
 async def display_menu() -> int:
-    console.print("1. Скачать видео", style="bold blue")
-    console.print("2. Загружать видео", style="bold blue")
+    console.print("1. Скачать видео")
+    console.print("2. Загружать видео")
     console.print("3. Выйти", style="bold red")
     choice = await asyncio.to_thread(Prompt.ask, "Введите номер действия", choices=["1", "2", "3"], default="3")
     return int(choice)

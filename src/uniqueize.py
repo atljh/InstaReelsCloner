@@ -1,5 +1,4 @@
 import os
-import random
 import numpy as np
 from typing import Dict
 from concurrent.futures import ProcessPoolExecutor
@@ -49,7 +48,7 @@ class UniqueManager:
             final_clip = CompositeVideoClip([clip, image])
             final_clip.write_videofile(output_path, codec='libx264', logger=None)
 
-            console.print(f"[blue]Видео уникализировано: {output_path}[/blue]")
+            console.print(f"Видео уникализировано: {output_path}")
             return output_path
         except Exception as e:
             console.print(f"[bold red]Ошибка обработки {video_path}: {e}[/bold red]")

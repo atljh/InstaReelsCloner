@@ -22,7 +22,7 @@ class ReelsCloner:
         download_res = await self.download_manager._main(self.username)
         if not download_res:
             return False
-        console.print("[blue]Скачивание завершено[/]")
+        console.print("Скачивание завершено")
         return True
 
     async def uniqueize_videos(self) -> None:
