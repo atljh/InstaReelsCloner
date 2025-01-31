@@ -13,6 +13,12 @@ class UniqueManager:
         self.video_dir = config.get('download_folder')
         self.output_dir = config.get('output_folder', 'downloads/unique_videos')
 
+        self.contrast_factor = config.get('contrast_factor', 1.1)
+        self.brightness_factor = config.get('brightness_factor', 1.05)
+        self.speed_factor = config.get('speed_factor', 1.1)
+        self.color_factor = config.get('color_factor', 1.2)
+        self.image_name = config.get('image_name', 'image.png')
+
         os.makedirs(self.output_dir, exist_ok=True)
 
     def unique_video(self, video_path: str) -> str:
@@ -26,27 +32,31 @@ class UniqueManager:
 
             def adjust_contrast_exposure(frame):
                 img = Image.fromarray(frame)
-                img = ImageEnhance.Contrast(img).enhance(1.1)
-                img = ImageEnhance.Brightness(img).enhance(1.05)
+                img = ImageEnhance.Contrast(img).enhance(self.contrast_factor)
+                img = ImageEnhance.Brightness(img).enhance(self.brightness_factor)
                 return np.array(img)
 
-            clip = clip.fl_image(adjust_contrast_exposure).fx(vfx.speedx, 1.1)
+            clip = clip.fl_image(adjust_contrast_exposure).fx(vfx.speedx, self.speed_factor)
 
             def adjust_color(frame):
                 img = Image.fromarray(frame)
-                img = ImageEnhance.Color(img).enhance(1.2)
+                img = ImageEnhance.Color(img).enhance(self.color_factor)
                 return np.array(img)
 
             clip = clip.fl_image(adjust_color)
 
-            image = (
-                ImageClip("image.png")
-                .set_duration(clip.duration)
-                .resize(width=clip.w, height=clip.h)
-                .set_pos("center")
-            )
+            if os.path.exists(self.image_name):
+                image = (
+                    ImageClip(self.image_name)
+                    .set_duration(clip.duration)
+                    .resize(width=clip.w, height=clip.h)
+                    .set_pos("center")
+                )
+                final_clip = CompositeVideoClip([clip, image])
+            else:
+                console.print(f"[yellow]Изображение для наложения {self.image_name} не найдено. Наложение пропущено.[/yellow]")
+                final_clip = clip
 
-            final_clip = CompositeVideoClip([clip, image])
             final_clip.write_videofile(output_path, codec='libx264', logger=None)
 
             console.print(f"Видео уникализировано: {output_path}")

@@ -7,8 +7,13 @@ session_name: "session.json" # Название файла сессии
 videos_to_download: 30 # Количество последних рилсов к скачиванию
 download_folder: "downloads/videos" # Путь к папке для сохранения скачанных видео
 output_folder: "downloads/unique_videos" # Путь к папке для сохранения уникализированных видео
-image_name: "image.png" # Картинка для уникализации
 uniqueize: "true" # true\false
+
+contrast_factor: 1.1    # Увеличение контраста на 10%
+brightness_factor: 1.05  # Увеличение яркости на 5%
+speed_factor: 1.1  # Увеличение скорости на 10%
+color_factor: 1.2  # Увеличение насыщенности цвета на 20%
+image_name: "image.png" # Картинка для уникализации
 
 # Настройки для папки 1
 folder_1:
