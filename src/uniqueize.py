@@ -42,9 +42,10 @@ class UniqueManager:
             image = (
                 ImageClip("image.png")
                 .set_duration(clip.duration)
-                .resize(height=100)
-                .set_pos(("right", "bottom"))
+                .resize(width=clip.w, height=clip.h)
+                .set_pos("center")
             )
+
             final_clip = CompositeVideoClip([clip, image])
             final_clip.write_videofile(output_path, codec='libx264', logger=None)
 

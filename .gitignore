@@ -7,3 +7,4 @@ config.yaml
 *.json
 *.mp4
 *.jpg
+*.png
