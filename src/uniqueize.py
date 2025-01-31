@@ -57,8 +57,8 @@ class UniqueManager:
                 console.print(f"[yellow]Изображение для наложения {self.image_name} не найдено. Наложение пропущено.[/yellow]")
                 final_clip = clip
 
-            final_clip.write_videofile(output_path, codec='libx264', logger=None)
-
+            final_clip.write_videofile(output_path, codec='libx264', audio_codec='aac', threads=2, logger='bar')
+    
             console.print(f"Видео уникализировано: {output_path}")
             return output_path
         except Exception as e:
@@ -78,7 +78,7 @@ class UniqueManager:
 
         console.print(f"[yellow]Начинаем обработку {len(video_files)} видео...[/yellow]")
 
-        with ProcessPoolExecutor(max_workers=4) as executor:
+        with ProcessPoolExecutor(max_workers=2) as executor:
             results = list(executor.map(self.unique_video, video_files))
 
         console.print(f"[green]Обработка завершена. Уникализировано {sum(1 for r in results if r)} видео.[/green]")
