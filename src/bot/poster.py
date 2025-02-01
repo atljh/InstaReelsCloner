@@ -31,6 +31,7 @@ class ReelsPoster:
         result = await self.post_manager.post_video(video_path, description)
         if result:
             console.print(f"[green]✅ Видео {video_path} успешно загружено![/green]")
+        return result
 
     async def post_reels(self, folder: str, descriptions: List[str]) -> None:
         try:
@@ -52,8 +53,9 @@ class ReelsPoster:
         video_path = os.path.join(folder, video)
         console.print(f"📢 Загружаем видео {video} с описанием: {description}")
 
-        await self.post_video(video_path, description)
-
+        result = await self.post_video(video_path, description)
+        if not result:
+            return
         try:
             os.remove(video_path)
             os.remove(f'{video_path}.jpg')

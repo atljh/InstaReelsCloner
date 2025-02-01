@@ -53,7 +53,7 @@ class DownloadManager:
             self.client.video_download_by_url(url, save_path)
             return True
         except Exception as e:
-            console.print(f"[red]Ошибка при загрузке видео: {url}, {e}[/red]")
+            console.print(f"[red]Ошибка при загрузке видео[/red]")
             return False
 
     async def handle_videos(self, video_urls: List) -> None:
