@@ -29,13 +29,13 @@ class ReelsCloner:
         self.unique_manager._main()
 
     async def start(self) -> None:
-        login_res = await self._login()
-        if not login_res:
-            return
-        result = await self.download_videos()
-        await self._logout()
-        if not result:
-            return
+        # login_res = await self._login()
+        # if not login_res:
+        #     return
+        # result = await self.download_videos()
+        # await self._logout()
+        # if not result:
+        #     return
         if not self.config.get("uniqueize", False):
             return
         console.print("[green]Уникализация видео...[/]")
