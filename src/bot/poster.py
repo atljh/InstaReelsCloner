@@ -56,7 +56,7 @@ class ReelsPoster:
 
         try:
             os.remove(video_path)
-            os.remove(f'{video_path}.mp4')
+            os.remove(f'{video_path}.jpg')
             console.print(f"[green]✅ Видео {video} удалено из папки {folder}[/green]")
         except Exception as e:
             console.print(f"[red]❌ Ошибка при удалении видео {video}: {e}[/red]")
