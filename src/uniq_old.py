@@ -1,11 +1,8 @@
 import os
-import numpy as np
 from typing import Dict
 from concurrent.futures import ProcessPoolExecutor
-from PIL import ImageEnhance, Image
-from moviepy.editor import VideoFileClip, ImageClip, CompositeVideoClip, vfx
+from moviepy import VideoFileClip, vfx, CompositeVideoClip, ImageClip
 from console import console
-
 
 class UniqueManager:
     def __init__(self, config: Dict):
@@ -30,40 +27,32 @@ class UniqueManager:
         output_path = os.path.join(self.output_dir, file_name)
 
         try:
-            # Trying to get first frame
+            # Проверка доступности файла
             with VideoFileClip(video_path) as test_clip:
                 test_clip.get_frame(0)
 
             clip = VideoFileClip(video_path)
 
-            def adjust_contrast_exposure(frame):
-                img = Image.fromarray(frame)
-                img = ImageEnhance.Contrast(img).enhance(self.contrast_factor)
-                img = ImageEnhance.Brightness(img).enhance(self.brightness_factor)
-                return np.array(img)
-
-            clip = clip.fl_image(adjust_contrast_exposure).fx(vfx.speedx, self.speed_factor)
-
-            def adjust_color(frame):
-                img = Image.fromarray(frame)
-                img = ImageEnhance.Color(img).enhance(self.color_factor)
-                return np.array(img)
-
-            clip = clip.fl_image(adjust_color)
+            clip = clip.with_effects([vfx.MultiplyColor(self.color_factor), vfx.MultiplySpeed(self.speed_factor), vfx.LumContrast(lum=self.brightness_factor, contrast=self.contrast_factor)])
 
             if os.path.exists(self.image_name):
                 image = (
                     ImageClip(self.image_name)
-                    .set_duration(clip.duration)
-                    .resize(width=clip.w, height=clip.h)
-                    .set_pos("center")
+                    .with_duration(clip.duration)
+                    .with_position("center")
                 )
                 final_clip = CompositeVideoClip([clip, image])
             else:
                 console.print(f"[yellow]Изображение для наложения {self.image_name} не найдено. Наложение пропущено.[/yellow]")
                 final_clip = clip
 
-            final_clip.write_videofile(output_path, codec='libx264', logger=None)
+            final_clip.write_videofile(
+                output_path,
+                threads=4,
+                logger=None,
+                preset="ultrafast",
+                ffmpeg_params=["-nostats", "-loglevel", "quiet"]
+            )
 
             console.print(f"Видео уникализировано: {output_path}")
             return output_path
