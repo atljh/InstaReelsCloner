@@ -37,10 +37,8 @@ async def main() -> None:
             if background_task and not background_task.done():
                 console.print("\n[bold yellow]Публикация уже запущена в фоне.[/bold yellow]")
             else:
-                console.print("\n[bold green]Запуск публикации видео в фоне...[/bold green]")
                 poster = ReelsPoster(config)
                 background_task = asyncio.create_task(poster.start())
-                console.print("[bold green]Публикация запущена в фоне.[/bold green]")
                 await asyncio.sleep(1)
 
         elif action == 3:

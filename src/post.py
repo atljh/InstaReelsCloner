@@ -25,6 +25,8 @@ class PostManager:
         except ChallengeRequired:
             console.print("[red]Ошибка: требуется подтверждение аккаунта (например, через SMS).[/]")
             return False
+        except IndexError:
+            return False
         except Exception as e:
             console.print(f"[red]Ошибка при публикации видео: {str(e)}[/]")
             return False
