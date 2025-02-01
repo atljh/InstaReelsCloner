@@ -56,22 +56,19 @@ class ReelsPoster:
 
         try:
             os.remove(video_path)
-            os.remove('video_path'+'.mp4')
+            os.remove(f'{video_path}.mp4')
             console.print(f"[green]✅ Видео {video} удалено из папки {folder}[/green]")
         except Exception as e:
             console.print(f"[red]❌ Ошибка при удалении видео {video}: {e}[/red]")
 
     async def handle_time(self) -> None:
         current_time = datetime.now().strftime("%H:%M")
-        console.print(f"[cyan]🕒 Текущее время: {current_time}[/cyan]")
 
         if current_time in self.folder_1_times:
-            console.print(f"[cyan]⌛ Ожидаемое время для загрузки видео из {self.folder_1}: {self.folder_1_times}[/cyan]")
             await self._login()
             await self.post_reels(self.folder_1, self.folder_1_descriptions)
             await self._logout()
         elif current_time in self.folder_2_times:
-            console.print(f"[cyan]⌛ Ожидаемое время для загрузки видео из {self.folder_2}: {self.folder_2_times}[/cyan]")
             await self._login()
             await self.post_reels(self.folder_2, self.folder_2_descriptions)
             await self._logout()
@@ -80,6 +77,14 @@ class ReelsPoster:
 
     async def start(self) -> None:
         console.print("[green]🚀 Запуск планировщика загрузки видео...[/green]")
+        current_time = datetime.now().strftime("%H:%M")
+
+        console.print(f"[cyan]🕒 Текущее время: {current_time}[/cyan]")
+        fold1_times = ' | '.join(self.folder_1_times)
+        fold2_times = ' | '.join(self.folder_2_times)
+        console.print(f"[cyan]⌛ Ожидаемое время для загрузки видео из {self.folder_1}: {fold1_times}[/cyan]")
+        console.print(f"[cyan]⌛ Ожидаемое время для загрузки видео из {self.folder_2}: {fold2_times}[/cyan]")
+
         while True:
             await self.handle_time()
             await asyncio.sleep(60)
