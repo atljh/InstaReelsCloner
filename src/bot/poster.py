@@ -1,7 +1,7 @@
 import os
 import asyncio
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 from src.auth import AuthManager
 from src.post import PostManager
@@ -65,25 +65,61 @@ class ReelsPoster:
         current_time = datetime.now().strftime("%H:%M")
 
         if current_time in self.folder_1_times:
+            console.print(f"\n[cyan]🕒 Текущее время: {current_time}[/cyan]")
+            console.print(f"[green]🚀 Начинаем загрузку видео из {self.folder_1}...[/green]")
             await self._login()
             await self.post_reels(self.folder_1, self.folder_1_descriptions)
             await self._logout()
         elif current_time in self.folder_2_times:
+            console.print(f"\n[cyan]🕒 Текущее время: {current_time}[/cyan]")
+            console.print(f"[green]🚀 Начинаем загрузку видео из {self.folder_2}...[/green]")
             await self._login()
             await self.post_reels(self.folder_2, self.folder_2_descriptions)
             await self._logout()
         else:
-            console.print("[cyan]🕒 Ожидаем следующего времени для загрузки...[/cyan]")
+            nearest_time_folder_1 = self._get_nearest_time(self.folder_1_times, current_time)
+            nearest_time_folder_2 = self._get_nearest_time(self.folder_2_times, current_time)
+
+            time_until_folder_1 = self._get_time_difference(current_time, nearest_time_folder_1)
+            time_until_folder_2 = self._get_time_difference(current_time, nearest_time_folder_2)
+
+            console.print(f"\n[cyan]🕒 Текущее время: {current_time}[/cyan]")
+            console.print(f"[yellow]⏳ Ближайшее время для загрузки видео из {self.folder_1}: {nearest_time_folder_1} (через {time_until_folder_1})...[/yellow]")
+            console.print(f"[yellow]⏳ Ближайшее время для загрузки видео из {self.folder_2}: {nearest_time_folder_2} (через {time_until_folder_2})...[/yellow]")
+
+    def _get_nearest_time(self, times: List[str], current_time: str) -> str:
+        current = datetime.strptime(current_time, "%H:%M")
+        nearest_time = None
+        min_difference = timedelta.max
+
+        for time in times:
+            target = datetime.strptime(time, "%H:%M")
+            if target < current:
+                target += timedelta(days=1)
+
+            difference = target - current
+            if difference < min_difference:
+                min_difference = difference
+                nearest_time = time
+        return nearest_time
+
+    def _get_time_difference(self, current_time: str, target_time: str) -> str:
+        current = datetime.strptime(current_time, "%H:%M")
+        target = datetime.strptime(target_time, "%H:%M")
+
+        if target < current:
+            target += timedelta(days=1)
+
+        difference = target - current
+        hours, remainder = divmod(difference.seconds, 3600)
+        minutes = remainder // 60
+
+        if hours > 0:
+            return f"{hours} ч {minutes} мин"
+        return f"{minutes} мин"
 
     async def start(self) -> None:
         console.print("[green]🚀 Запуск планировщика загрузки видео...[/green]")
-        current_time = datetime.now().strftime("%H:%M")
-
-        console.print(f"[cyan]🕒 Текущее время: {current_time}[/cyan]")
-        fold1_times = ' | '.join(self.folder_1_times)
-        fold2_times = ' | '.join(self.folder_2_times)
-        console.print(f"[cyan]⌛ Ожидаемое время для загрузки видео из {self.folder_1}: {fold1_times}[/cyan]")
-        console.print(f"[cyan]⌛ Ожидаемое время для загрузки видео из {self.folder_2}: {fold2_times}[/cyan]")
 
         while True:
             await self.handle_time()
