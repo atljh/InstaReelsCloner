@@ -75,8 +75,7 @@ class UniqueManager:
         except Exception as e:
             if "error" in str(e):
                 console.print(f"[bold red]Ошибка: видео {video_path} повреждено или пустое.[/bold red]")
-            console.print(f"[bold red]Ошибка обработки {video_path}: {e}[/bold red]")
-
+            console.print(f"[bold red]Ошибка: видео {video_path} повреждено или пустое.[/bold red]")
         return None
 
     def uniqueize_all_videos(self):
