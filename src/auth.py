@@ -55,6 +55,11 @@ class AuthManager:
             except ChallengeRequired:
                 console.print("[red]Необходимо подтверждение через СМС для аккаунта[/]")
                 sys.exit(1)
+                return
+            except ConnectionError:
+                console.print("[red]Прокси не валидные[/]")
+                sys.exit(1)
+                return
             except Exception as e:
                 if "Failed to parse" in str(e):
                     console.print("[red]Прокси не валидные. Пожалуйста, проверьте настройки[/]")
@@ -75,7 +80,15 @@ class AuthManager:
                     login_via_pw = True
                     self.client.dump_settings(self.session_file)
                     console.print(f"[green]Успешный вход через логин/пароль:[/] {self.config['username']}")
+            except ConnectionError:
+                console.print("[red]Прокси не валидные[/]")
+                sys.exit(1)
+                return
             except Exception as e:
+                if "ConnectionError" in str(e):
+                    console.print("[red]Прокси не валидные[/]")
+                    sys.exit(1)
+                    return
                 console.print(f"[red]Ошибка при входе через логин и пароль:[/] {e}")
 
         if not login_via_pw and not login_via_session:
