@@ -70,8 +70,8 @@ class UniqueManager:
 
         except IndexError:
             console.print(f"[bold red]Ошибка: видео {video_path} повреждено или пустое.[/bold red]")
-        except OSError as e:
-            console.print(f"[bold red]Видео повреждено: {video_path}. Ошибка: {e}[/bold red]")
+        except OSError:
+            console.print(f"[bold red]Видео повреждено: {video_path}. [/bold red]")
         except Exception as e:
             if "error" in str(e):
                 console.print(f"[bold red]Ошибка: видео {video_path} повреждено или пустое.[/bold red]")
