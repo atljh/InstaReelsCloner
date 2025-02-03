@@ -11,7 +11,7 @@ class AuthManager:
         self.client = Client()
         self.config = config
         self.session_file = 'session.json'
-        self.client.delay_range = [0, 1]
+        self.client.delay_range = [3, 5]
 
         if self.config.get('proxy'):
             proxy_url = self.config['proxy']
