@@ -8,6 +8,7 @@ videos_to_download: 30 # Количество последних рилсов к
 download_folder: "downloads/videos" # Путь к папке для сохранения скачанных видео
 output_folder: "downloads/unique_videos" # Путь к папке для сохранения уникализированных видео
 uniqueize: "true" # true\false
+threads: 4
 
 contrast_factor: 1.1    # Увеличение контраста на 10%
 brightness_factor: 1.05  # Увеличение яркости на 5%
