@@ -18,6 +18,7 @@ class UniqueManager:
         self.speed_factor = config.get('speed_factor', 1.1)
         self.color_factor = config.get('color_factor', 1.2)
         self.image_name = config.get('image_name', 'image.png')
+        self.threads = config.get('threads', 2)
 
         os.makedirs(self.output_dir, exist_ok=True)
 
@@ -91,7 +92,7 @@ class UniqueManager:
 
         console.print(f"[yellow]Начинаем обработку {len(video_files)} видео...[/yellow]")
 
-        with ProcessPoolExecutor(max_workers=4) as executor:
+        with ProcessPoolExecutor(max_workers=self.threads) as executor:
             results = list(executor.map(self.unique_video, video_files))
 
         console.print(f"[green]Обработка завершена. Уникализировано {sum(1 for r in results if r)} видео.[/green]")
