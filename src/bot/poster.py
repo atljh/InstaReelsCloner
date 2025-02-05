@@ -26,9 +26,9 @@ class ReelsPoster:
     async def _logout(self) -> None:
         self.auth_manager.logout()
 
-    async def post_video(self, video_path: str, description: str) -> None:
+    def post_video(self, video_path: str, description: str) -> None:
         console.print(f"[cyan]⌛ Загрузка видео {video_path}...[/cyan]")
-        result = await self.post_manager.post_video(video_path, description)
+        result = self.post_manager.post_video(video_path, description)
         if result:
             console.print(f"[green]✅ Видео {video_path} успешно загружено![/green]")
         return result
@@ -53,15 +53,16 @@ class ReelsPoster:
         video_path = os.path.join(folder, video)
         console.print(f"📢 Загружаем видео {video} с описанием: {description}")
 
-        result = await self.post_video(video_path, description)
+        result = self.post_video(video_path, description)
         if not result:
             return
+        await asyncio.sleep(5)
         try:
             os.remove(video_path)
             os.remove(f'{video_path}.jpg')
-            console.print(f"[green]✅ Видео {video} удалено из папки {folder}[/green]")
+            console.print(f"\n[green]✅ Видео {video} удалено из папки {folder}[/green]")
         except Exception as e:
-            console.print(f"[red]❌ Ошибка при удалении видео {video}: {e}[/red]")
+            console.print(f"\n[red]❌ Ошибка при удалении видео {video}: {e}[/red]")
 
     async def handle_time(self) -> None:
         current_time = datetime.now().strftime("%H:%M")

@@ -7,9 +7,8 @@ class PostManager:
     def __init__(self, client: Client):
         self.client = client
 
-    async def post_video(self, video_path: str, description: str) -> bool:
+    def post_video(self, video_path: str, description: str) -> bool:
         try:
-            self.client.relogin()
             self.client.clip_upload(
                 video_path,
                 caption=description,
