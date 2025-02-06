@@ -9,6 +9,7 @@ class PostManager:
 
     def post_video(self, video_path: str, description: str) -> bool:
         try:
+            self.client.relogin()
             self.client.clip_upload(
                 video_path,
                 caption=description,
