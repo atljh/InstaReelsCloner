@@ -19,6 +19,7 @@ class ReelsPoster:
         self.folder_2_times = config["folder_2"]["times"]
         self.folder_1_descriptions = config["folder_1"]["descriptions"]
         self.folder_2_descriptions = config["folder_2"]["descriptions"]
+        self.post_attempts = config["post_attempts"]
 
     async def _login(self) -> None:
         self.auth_manager.login()
@@ -27,11 +28,16 @@ class ReelsPoster:
         self.auth_manager.logout()
 
     def post_video(self, video_path: str, description: str) -> None:
-        console.print(f"[cyan]⌛ Загрузка видео {video_path}...[/cyan]")
-        result = self.post_manager.post_video(video_path, description)
-        if result:
-            console.print(f"[green]✅ Видео {video_path} успешно загружено![/green]")
-        return result
+        for attempt in range(self.post_attempts):
+            console.print(f"[cyan]⌛ Загрузка видео {video_path}, попытка {attempt + 1} из {self.post_attempts}...[/cyan]")
+            result = self.post_manager.post_video(video_path, description)
+            if result:
+                console.print(f"[green]✅ Видео {video_path} успешно загружено![/green]")
+                return result
+            else:
+                console.print(f"[red]❌ Не удалось загрузить видео {video_path}. Попробуйте еще раз...[/red]")
+        console.print(f"[red]⚠️ Не удалось загрузить видео {video_path} после {self.post_attempts} попыток.[/red]")
+        return None
 
     async def post_reels(self, folder: str, descriptions: List[str]) -> None:
         try:
