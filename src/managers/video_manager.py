@@ -14,7 +14,7 @@ class VideoManager:
             console.print(f"[red]❌ Папка {folder} не найдена[/red]")
             return []
 
-    def post_video(self, video_path: str, description: str) -> bool:
+    async def post_video(self, video_path: str, description: str) -> bool:
         for attempt in range(3):
             console.print(f"[cyan]⌛ Загрузка видео {video_path}, попытка {attempt + 1}...[/cyan]")
             if self.post_manager.post_video(video_path, description):
