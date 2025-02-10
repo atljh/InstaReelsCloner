@@ -25,7 +25,7 @@ class ReelsPoster:
             console.print(f"[green]🚀 Начинаем загрузку видео из {folder}...[/green]")
             await self.post_reels(folder, descriptions)
 
-    async def post_reels(self, folder: str, descriptions: List[str]) -> None:
+    async def post_reels(self, folder: str, descriptions: List[str]) -> bool:
         video_files = self.video_manager.get_video_files(folder)
         if not video_files:
             console.print(f"Видео в папке {folder} не найдены")
@@ -37,11 +37,12 @@ class ReelsPoster:
         console.print(f"📢 Загружаем видео {video} с описанием: {description}")
 
         await self.auth_manager.login(logs=False)
-        result = self.video_manager.post_video(video_path, description)
+        post_result = self.video_manager.post_video(video_path, description)
         await self.auth_manager.logout(logs=False)
-        if result:
-            console.print("Удаляем видео, очищаем кеш...")
-            await self.auth_manager.logout(logs=False)
-            await asyncio.sleep(5)
-            await self.video_manager.delete_video(video_path, video, folder)
-            return
+        console.print("Удаляем видео, очищаем кеш...")
+        await asyncio.sleep(5)
+        await self.video_manager.delete_video(video_path, video, folder)
+        if post_result:
+            return True
+        result = await self.post_reels(folder, descriptions)
+        return result

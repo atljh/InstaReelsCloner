@@ -22,7 +22,7 @@ class VideoManager:
                 return True
             console.print(f"[red]❌ Не удалось загрузить видео {video_path}. Пробуем снова...[/red]")
 
-        console.print(f"[red]⚠️ Видео {video_path} не загружено. Удаляем файл.[/red]")
+        console.print(f"[red]⚠️ Видео {video_path} не загружено. Удаляем файл, пробуем загрузить следующее видео[/red]")
         return False
 
     async def delete_video(self, video_path: str, video: str, folder: str):
