@@ -28,8 +28,6 @@ class PostManager:
             return False
         except IndexError:
             return False
-        except Exception as e:
-            console.print(f"[red]Ошибка при публикации видео: {str(e)}[/]")
-            if hasattr(e, 'response') and e.response is not None:
-                console.print(f"[red]Ответ Instagram: {e.response.json()}[/]")
+        except Exception:
+            console.print("[red]Ошибка при публикации видео[/]")
             return False
