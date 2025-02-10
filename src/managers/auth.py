@@ -21,19 +21,21 @@ class AuthManager:
             f"Прокси: {'активен' if self.config.get('proxy') else 'отсутствует'}"
         )
 
-    def load_session(self, session_file: str = 'session.json') -> bool:
+    def load_session(self, session_file: str = 'session.json', logs=True) -> bool:
         try:
             if os.path.exists(session_file):
                 session = self.client.load_settings(session_file)
-                console.print("[green]Сессия успешно загружена из файла[/]")
+                if logs:
+                    console.print("[green]Сессия успешно загружена из файла[/]")
                 return session
-            console.print("[yellow]Файл сессии не найден. Попробуем авторизацию через логин/пароль.[/]")
+            if logs:
+                console.print("[yellow]Файл сессии не найден. Попробуем авторизацию через логин/пароль.[/]")
             return False
         except Exception as e:
             console.print(f"[red]Ошибка при загрузке сессии:[/] {str(e)}")
             return False
 
-    def login(self) -> bool:
+    def login(self, logs=True) -> bool:
         session = self.load_session(self.session_file)
         login_via_session = False
         login_via_pw = False
@@ -42,7 +44,8 @@ class AuthManager:
             try:
                 self.client.set_settings(session)
                 self.client.login(self.config['username'], self.config['password'])
-                console.print(f"Авторизация прошла успешно: {self.config['username']}", style="bold blue")
+                if logs:
+                    console.print(f"Авторизация прошла успешно: {self.config['username']}", style="bold blue")
                 try:
                     self.client.get_timeline_feed()
                 except LoginRequired:
@@ -70,7 +73,8 @@ class AuthManager:
                 elif "submit_phone" in str(e):
                     console.print("[red]Нужно подтверждение по смс[/]")
                     sys.exit(1)
-                console.print(f"[red]Ошибка при авторизации:{e}[/]")
+                if logs:
+                    console.print(f"[red]Ошибка при авторизации:{e}[/]")
                 return False
 
         if not login_via_session:
@@ -89,7 +93,8 @@ class AuthManager:
                     console.print("[red]Прокси не валидные[/]")
                     sys.exit(1)
                     return
-                console.print(f"[red]Ошибка при входе через логин и пароль:[/] {e}")
+                if logs:
+                    console.print(f"[red]Ошибка при входе через логин и пароль:[/] {e}")
 
         if not login_via_pw and not login_via_session:
             console.print("[red]Не удалось авторизоваться ни через сессию, ни через логин/пароль[/]")
@@ -97,11 +102,12 @@ class AuthManager:
 
         return True
 
-    def logout(self) -> None:
+    def logout(self, logs=True) -> None:
         try:
             self.client.logout()
             if os.path.exists(self.session_file):
                 os.remove(self.session_file)
-            console.print("[green]Выход из аккаунта выполнен успешно и файл сессии удален.[/]")
+            if logs:
+                console.print("[green]Выход из аккаунта выполнен успешно и файл сессии удален.[/]")
         except Exception as e:
             console.print(f"[red]Ошибка при выходе из аккаунта:[/] {e}")

@@ -25,7 +25,6 @@ class ReelsPoster:
             console.print(f"[green]🚀 Начинаем загрузку видео из {folder}...[/green]")
             await self.auth_manager.login()
             await self.post_reels(folder, descriptions)
-            await self.auth_manager.logout()
 
     async def post_reels(self, folder: str, descriptions: List[str]) -> None:
         video_files = self.video_manager.get_video_files(folder)
@@ -40,5 +39,8 @@ class ReelsPoster:
         result = self.video_manager.post_video(video_path, description)
 
         if result:
+            console.print("Удаляем видео, очищаем кеш...")
+            await self.auth_manager.logout()
             await asyncio.sleep(5)
             await self.video_manager.delete_video(video_path, video, folder)
+            return
