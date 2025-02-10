@@ -27,7 +27,7 @@ class ReelsPoster:
     async def _logout(self) -> None:
         self.auth_manager.logout()
 
-    def post_video(self, video_path: str, description: str) -> None:
+    def post_video(self, video_path: str, description: str) -> bool:
         for attempt in range(self.post_attempts):
             console.print(f"[cyan]⌛ Загрузка видео {video_path}, попытка {attempt + 1} из {self.post_attempts}...[/cyan]")
             result = self.post_manager.post_video(video_path, description)
@@ -36,8 +36,19 @@ class ReelsPoster:
                 return result
             else:
                 console.print(f"[red]❌ Не удалось загрузить видео {video_path}. Попробуйте еще раз...[/red]")
-        console.print(f"[red]⚠️ Не удалось загрузить видео {video_path} после {self.post_attempts} попыток.[/red]")
-        return None
+        console.print(f"[red]⚠️ Не удалось загрузить видео {video_path} после {self.post_attempts} попыток.\nУдаляем его и загружаем следующее видео[/red]")
+        return False
+
+    async def delete_video(self, video_path: str, video: str, folder: str):
+        try:
+            if os.path.exists(video_path):
+                os.remove(video_path)
+            image_name = f'{video_path}.jpg'
+            if os.path.exists(image_name):
+                os.remove(image_name)
+            console.print(f"\n[green]✅ Видео {video} удалено из папки {folder}[/green]")
+        except Exception as e:
+            console.print(f"\n[red]❌ Ошибка при удалении видео {video}: {e}[/red]")
 
     async def post_reels(self, folder: str, descriptions: List[str]) -> None:
         try:
@@ -63,18 +74,7 @@ class ReelsPoster:
         if not result:
             return
         await asyncio.sleep(5)
-        import shutil
-        import gc
-        gc.collect()
-        try:
-            shutil.move(video_path, "temp_deleted.mp4")
-            os.remove("temp_deleted.mp4")
-            image_name = f'{video_path}.jpg'
-            if os.path.exists(image_name):
-                os.remove(image_name)
-            console.print(f"\n[green]✅ Видео {video} удалено из папки {folder}[/green]")
-        except Exception as e:
-            console.print(f"\n[red]❌ Ошибка при удалении видео {video}: {e}[/red]")
+        await self.delete_video(video_path, video, folder)
 
     async def handle_time(self) -> None:
         current_time = datetime.now().strftime("%H:%M")
