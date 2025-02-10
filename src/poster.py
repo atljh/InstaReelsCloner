@@ -3,9 +3,7 @@ import os
 import random
 from typing import List
 from console import console
-from src.video_manager import VideoManager
-from src.auth import AuthManager
-from src.scheduler import Scheduler
+from src.managers import VideoManager, AuthManager, Scheduler
 
 
 class ReelsPoster:

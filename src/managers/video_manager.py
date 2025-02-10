@@ -1,6 +1,6 @@
 import os
 from console import console
-from src.post import PostManager
+from src.managers import PostManager
 
 
 class VideoManager:

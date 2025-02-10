@@ -1,6 +1,4 @@
-from src.auth import AuthManager
-from src.download import DownloadManager
-from src.uniqueize import UniqueManager
+from src.managers import AuthManager, DownloadManager, UniqueManager
 from console import console
 
 
