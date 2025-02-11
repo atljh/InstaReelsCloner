@@ -1,5 +1,6 @@
 import asyncio
 import os
+import time
 import random
 from typing import List
 from src.tools import console
@@ -40,8 +41,7 @@ class ReelsPoster:
         post_result = await self.video_manager.post_video(video_path, description)
         self.auth_manager.logout(logs=False)
         console.print("Удаляем видео, очищаем кеш...")
-        await asyncio.sleep(5)
-        await self.video_manager.delete_video(video_path, video, folder)
+        self.video_manager.delete_video(video_path, video, folder)
         if post_result:
             return True
         result = await self.post_reels(folder, descriptions)

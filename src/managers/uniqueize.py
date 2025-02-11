@@ -67,6 +67,10 @@ class UniqueManager:
             final_clip.write_videofile(output_path, codec='libx264', logger=None)
 
             console.print(f"Видео уникализировано: {output_path}")
+            
+            clip.close()
+            final_clip.close()
+
             return output_path
 
         except IndexError:
