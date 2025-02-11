@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 from instagrapi import Client
 from instagrapi.exceptions import UserNotFound
-from console import console
+from src.tools import console
 
 
 class DownloadManager:

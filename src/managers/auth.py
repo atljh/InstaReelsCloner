@@ -3,7 +3,7 @@ import sys
 from typing import Dict
 from instagrapi import Client
 from instagrapi.exceptions import LoginRequired, ChallengeRequired
-from console import console
+from src.tools import console
 
 
 class AuthManager:

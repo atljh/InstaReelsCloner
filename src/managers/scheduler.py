@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from console import console
+from src.tools import console
 
 
 class Scheduler:

@@ -4,7 +4,7 @@ from typing import Dict
 from concurrent.futures import ProcessPoolExecutor
 from PIL import ImageEnhance, Image
 from moviepy.editor import VideoFileClip, ImageClip, CompositeVideoClip, vfx
-from console import console
+from src.tools import console
 
 
 class UniqueManager:

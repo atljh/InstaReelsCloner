@@ -1,5 +1,5 @@
 from src.managers import AuthManager, DownloadManager, UniqueManager
-from console import console
+from src.tools import console
 
 
 class ReelsCloner:

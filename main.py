@@ -1,10 +1,7 @@
 import asyncio
 from rich.prompt import Prompt
 from rich.panel import Panel
-from config import load_config
-from console import console
-from src.cloner import ReelsCloner
-from src.poster import ReelsPoster
+from src import ReelsCloner, ReelsPoster, load_config, console
 
 
 def display_welcome_message() -> None:

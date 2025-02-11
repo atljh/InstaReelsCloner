@@ -1,7 +1,7 @@
 import yaml
 import sys
 from typing import List, Dict
-from tools.console import console
+from src.tools import console
 
 
 def load_config(config_file: str = 'config.yaml') -> Dict:

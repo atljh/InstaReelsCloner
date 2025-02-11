@@ -2,7 +2,7 @@ import asyncio
 import os
 import random
 from typing import List
-from console import console
+from src.tools import console
 from src.managers import VideoManager, AuthManager, Scheduler
 
 

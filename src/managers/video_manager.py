@@ -1,5 +1,5 @@
 import os
-from console import console
+from src.tools import console
 from src.managers import PostManager
 
 
