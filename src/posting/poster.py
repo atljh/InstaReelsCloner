@@ -36,9 +36,9 @@ class ReelsPoster:
         description = random.choice(descriptions) if descriptions else ""
         console.print(f"📢 Загружаем видео {video} с описанием: {description}")
 
-        await self.auth_manager.login(logs=False)
-        post_result = self.video_manager.post_video(video_path, description)
-        await self.auth_manager.logout(logs=False)
+        self.auth_manager.login(logs=False)
+        post_result = await self.video_manager.post_video(video_path, description)
+        self.auth_manager.logout(logs=False)
         console.print("Удаляем видео, очищаем кеш...")
         await asyncio.sleep(5)
         await self.video_manager.delete_video(video_path, video, folder)

@@ -36,7 +36,7 @@ class AuthManager:
             return False
 
     def login(self, logs=True) -> bool:
-        session = self.load_session(self.session_file)
+        session = self.load_session(self.session_file, logs=logs)
         login_via_session = False
         login_via_pw = False
 

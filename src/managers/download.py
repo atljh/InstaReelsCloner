@@ -52,8 +52,8 @@ class DownloadManager:
             Path(save_path).parent.mkdir(parents=True, exist_ok=True)
             self.client.video_download_by_url(url, save_path)
             return True
-        except Exception:
-            console.print("[red]Ошибка при загрузке видео[/red]")
+        except Exception as e:
+            console.print(f"[red]Ошибка при загрузке видео[/red] {e}")
             return False
 
     async def handle_videos(self, video_urls: List) -> None:
