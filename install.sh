@@ -7,7 +7,7 @@ if ! command -v python3 &> /dev/null; then
     exit 1
 fi
 
-PYTHON_VERSION=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
+PYTHON_VERSION=$(python3.11 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
 
 if [[ "$PYTHON_VERSION" != "$REQUIRED_PYTHON" ]]; then
     echo "❌ Требуется Python $REQUIRED_PYTHON, но найден Python $PYTHON_VERSION"
@@ -18,7 +18,7 @@ echo "✅ Python $PYTHON_VERSION найден."
 
 if [ ! -d "venv" ]; then
     echo "📦 Создаём виртуальное окружение..."
-    python3 -m venv venv
+    python3.11 -m venv venv
 fi
 
 echo "🚀 Активируем виртуальное окружение..."
