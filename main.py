@@ -1,7 +1,7 @@
 import asyncio
 from rich.prompt import Prompt
 from rich.panel import Panel
-from src import ReelsCloner, ReelsPoster, load_config, console
+from src import ReelsCloner, load_config, console
 
 
 def display_welcome_message() -> None:
@@ -11,8 +11,7 @@ def display_welcome_message() -> None:
 
 async def display_menu() -> int:
     console.print("1. Скачать видео")
-    console.print("2. Загружать видео")
-    console.print("3. Выйти", style="bold red")
+    console.print("2. Выйти", style="bold red")
     choice = await asyncio.to_thread(Prompt.ask, "Введите номер действия", choices=["1", "2", "3"], default="3")
     return int(choice)
 
@@ -32,14 +31,6 @@ async def main() -> None:
             await cloner.start()
 
         elif action == 2:
-            if background_task and not background_task.done():
-                console.print("\n[bold yellow]Публикация уже запущена в фоне.[/bold yellow]")
-            else:
-                poster = ReelsPoster(config)
-                background_task = asyncio.create_task(poster.start())
-                await asyncio.sleep(1)
-
-        elif action == 3:
             console.print("\n[bold red]Выход из программы...[/bold red]")
             if background_task and not background_task.done():
                 background_task.cancel()
